@@ -9,7 +9,6 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # ATAC analysis
 
-
 ```{r message=FALSE}
 
 rm(list=ls())
@@ -22,9 +21,12 @@ library(circlize)
 
 ```
 
-Before running, change your working directory
+Before running, change your working directory in `/r_inputs/TemporalSpatialNeuralTube_settings.R` 
+
+The ATAC analysis starts from the output of nf-core atacseq. File: `consensus_peaks.mLb.clN.featureCounts.txt` in dir: ENTER
 
 ### Load settings
+
 Colors, main directory 
 
 ```{r}
@@ -38,10 +40,8 @@ source('./r_inputs/TemporalSpatialNeuralTube_settings.R')
 ### Set dirs
 ```{r}
 
-workingdir="~/Dropbox (The Francis Crick)/Glial_cisReg/"
 subworkinput="inputs_glialatac_1_eda_pca/"
 outdir="outputs_glialatac_1/"
-
 ifelse(!dir.exists(file.path(workingdir,outdir)), dir.create(file.path(workingdir,outdir)), "Directory exists")
 
 ```
@@ -76,41 +76,10 @@ ann_table_clean <- ann_table %>%
 ```
 
 
-## Colors and shapes
 
-```{r shapes-colors}
 
-sorted.DayGate <- c("D5_p1","D5_p2","D5_pM",
-                    "D7_p1","D7_p2","D7_pM",
-                    "D9_p1","D9_p2","D9_pM",
-                    "D11_p1","D11_p2","D11_pM")
-sorted.day <- c("D5","D7","D9","D11")
-sorted.dayNfia <- c("D5_NFIAn_WT","D5_NFIAn_MUT",
-                    "D7_NFIAn_WT","D7_NFIAn_MUT",
-                    "D9_NFIAn_WT","D9_NFIAp_WT","D9_NFIAn_MUT",
-                    "D11_NFIAp_WT","D11_NFIAn_MUT")
+## Differential analysis WT samples
 
-colorIZ <- c("#abdff4","#f1df9a","#f19aac",
-             "#55bee8","#e6c444","#e64466",
-            "#1a91c1","#c19e1a","#c11a3d",
-            "#0e506b","#6b570e","#7c1127")
-
-color_days <- c("#fadede","#f3aaaa","#e96666","#cf1e1e")  
-
-shapes4_manual = c(18,15,16,17) # these are block
-shapes5_manual = c(25,21,22,23,24) # these are filled
-shapes4_fill_manual = c(23,21,22,24)
-# 
-# # for Days
-# 
-# 
-# # for SAG
-# grey_colors <- c("#f6f6f6","#cecece","#808080","#595959")
-
-```
-
-## Differential analysis
-## Filter WT only
 
 ```{r}
 
@@ -171,7 +140,7 @@ t_vsd <- t(vsd_data[select,])
 vsd_pca <- prcomp(t_vsd, retx=TRUE, scale. = FALSE)
 
 var_explained <-vsd_pca$sdev^2/sum(vsd_pca$sdev^2)
-plot(var_explained)
+
 
 ```
 
@@ -211,363 +180,8 @@ ggplot(vsd_pca_plot, aes(x=-PC1,y=-PC2,fill=Gate,shape=Day)) +
        y=paste0("PC2: ",round(var_explained[2]*100,1),"%")) +
   theme_bw(base_size=16)
 
-ggplot(vsd_pca_plot, aes(x=-PC1,y=-PC2,fill=DayGate,shape=NFIAstatus)) +
-  scale_fill_manual(values = colorIZ) +
-  geom_point(size=4, alpha=0.9) +
-  guides(fill = guide_legend(override.aes=list(shape=21))) +
-  scale_shape_manual(values = shapes5_manual) +
-  labs(x=paste0("PC1: ",round(var_explained[1]*100,1),"%"),
-       y=paste0("PC2: ",round(var_explained[2]*100,1),"%")) +
-  theme_bw(base_size=16)
-
-ggplot(vsd_pca_plot, aes(x=-PC1,y=-PC2,fill=DayNFIA,shape=Gate)) +
-#  scale_fill_manual(values = colorIZ) +
-  geom_point(size=4, alpha=0.9) +
-  guides(fill = guide_legend(override.aes=list(shape=21))) +
-  scale_shape_manual(values = shapes5_manual) +
-  scale_fill_brewer(palette = "Paired") +
-  labs(x=paste0("PC1: ",round(var_explained[1]*100,1),"%"),
-       y=paste0("PC2: ",round(var_explained[2]*100,1),"%")) +
-  theme_bw(base_size=16)
 
 ```
-
-
-## Plot more components
-
-```{r fig.width=6, fig.height=4}
-
-ggplot(vsd_pca_plot, aes(x=-PC1,y=-PC3,fill=Gate,shape=Day)) +
-  scale_fill_manual(values = colorIZ[4:7]) +
-  geom_point(size=4, alpha=0.9) +
-  guides(fill = guide_legend(override.aes=list(shape=21))) +
-  scale_shape_manual(values = shapes5_manual) +
-  labs(x=paste0("PC1: ",round(var_explained[1]*100,1),"%"),
-       y=paste0("PC3: ",round(var_explained[3]*100,1),"%")) +
-  theme_bw(base_size=16)
-
-ggplot(vsd_pca_plot, aes(x=-PC1,y=-PC3,fill=Rep,shape=Day)) +
-  scale_fill_manual(values = colorIZ[4:7]) +
-  geom_point(size=4, alpha=0.9) +
-  guides(fill = guide_legend(override.aes=list(shape=21))) +
-  scale_shape_manual(values = shapes5_manual) +
-  labs(x=paste0("PC1: ",round(var_explained[1]*100,1),"%"),
-       y=paste0("PC3: ",round(var_explained[3]*100,1),"%")) +
-  theme_bw(base_size=16)
-
-
-ggplot(vsd_pca_plot, aes(x=PC4,y=PC2,fill=DayNFIA,shape=NFIAstatus)) +
-#  scale_fill_manual(values = colorIZ) +
-  geom_point(size=4, alpha=0.9) +
-  guides(fill = guide_legend(override.aes=list(shape=21))) +
-  scale_shape_manual(values = shapes5_manual) +
-  labs(x=paste0("PC4: ",round(var_explained[4]*100,1),"%"),
-       y=paste0("PC2: ",round(var_explained[2]*100,1),"%")) +
-  theme_bw(base_size=16)
-
-
-ggplot(vsd_pca_plot, aes(x=PC5,y=PC1,fill=DayGate,shape=NFIAstatus)) +
-  scale_fill_manual(values = colorIZ) +
-  geom_point(size=4, alpha=0.9) +
-  guides(fill = guide_legend(override.aes=list(shape=21))) +
-  scale_shape_manual(values = shapes4_fill_manual) +
-  labs(x=paste0("PC5: ",round(var_explained[5]*100,1),"%"),
-       y=paste0("PC1: ",round(var_explained[1]*100,1),"%")) +
-  theme_bw(base_size=16)
-
-```
-
-## Plots for seminar
-
-```{r fig.height=3.5, fig.width=10}
-# library(ggpubr)
-# 
-# p1 <- ggplot(vsd_pca_plot, aes(x=PC1,y=PC2,fill=Day)) +
-#   scale_fill_manual(values = red_colors) +
-#   geom_point(size=4, alpha=0.9, shape=21) +
-#   guides(fill = guide_legend(override.aes=list(shape=21))) +
-#   #scale_shape_manual(values = shapes4_fill_manual) +
-#   labs(x=paste0("PC1: ",round(var_explained[1]*100,1),"%"),
-#        y=paste0("PC2: ",round(var_explained[2]*100,1),"%")) +
-#   theme_bw(base_size=12)
-# #c(23,21,22,24)
-# 
-# p2 <- ggplot(vsd_pca_plot, aes(x=PC1,y=PC2,fill=SAG,shape=SAG)) +
-#   #scale_fill_manual(values = grey_colors) +
-#   scale_fill_grey(start = 0.9, end = 0.1) + 
-#   geom_point(size=4, alpha=0.9) +
-#   guides(fill = guide_legend(override.aes=list(shape=21))) +
-#   scale_shape_manual(values = shapes4_fill_manual) +
-#   labs(x=paste0("PC1: ",round(var_explained[1]*100,1),"%"),
-#        y=paste0("PC2: ",round(var_explained[2]*100,1),"%")) +
-#   theme_bw(base_size=12)
-# 
-# p3 <- ggplot(vsd_pca_plot, aes(x=PC1,y=PC2,fill=DayGate,shape=SAG)) +
-#   scale_fill_manual(values = colorIZ) +
-#   geom_point(size=4, alpha=0.9) +
-#   guides(fill = guide_legend(override.aes=list(shape=21))) +
-#   scale_shape_manual(values = shapes4_fill_manual) +
-#   labs(x=paste0("PC1: ",round(var_explained[1]*100,1),"%"),
-#        y=paste0("PC2: ",round(var_explained[2]*100,1),"%")) +
-#   theme_bw(base_size=12)
-# 
-# ggarrange(p1, p2, p3, ncol=3, nrow=1, common.legend = TRUE, legend="bottom")
-# ggarrange(p1, p2, p3, ncol=3, nrow=1, common.legend = FALSE, legend="right")
-
-```
-
-
-# Correlation Heatmaps - all elements
-
-```{r fig.width=11,fig.height=11}
-
-cor_vsd <-cor(vsd_data)
-
-phen_data <- genecolData_first %>%
-  select(c("Sample_ID","DayGate","Day","NFIAstatus","Rep")) %>%
-  remove_rownames() %>%
-  column_to_rownames("Sample_ID")
-ann_color_JD <- list(
-  DayGate = c(D5_p1="#abdff4",D5_p2="#f1df9a", D5_pM="#f19aac",
-              D7_p1="#55bee8",D7_p2="#e6c444",D7_pM="#e64466",
-              D9_p1="#1a91c1",D9_p2="#c19e1a",D9_pM="#c11a3d",
-              D11_p1="#0e506b",D11_p2="#6b570e",D11_pM="#7c1127"),
-  NFIAstatus = c(NFIAn_WT="#f6f6f6",NFIAp_WT="#cecece",`100`="#808080",NFIAn_MUT="#595959"),
-  Day = c(D5="#fadede",D7="#f3aaaa",D9="#e96666",D11="#cf1e1e"),
-  Rep = c(R1="#ebeb77", R2="#77b1eb", R3="#eb7777"))
-
-
-# Build the annotation for the complex heatmap
-heatmap_ann_row <- rowAnnotation(df=phen_data, col=ann_color_JD,
-       annotation_legend_param = list(DayGate = list(at =sorted.DayGate)))
-heatmap_ann <- HeatmapAnnotation(df=phen_data, col=ann_color_JD, show_legend = FALSE)
-
-
-
-# Annotated heatmap with selected colors
-hm_colors = colorRampPalette(rev(brewer.pal(n = 11, name = "RdBu")))(100)
-
-
-Heatmap(cor_vsd, name="Correlation", col=hm_colors,
-        cluster_columns = TRUE, cluster_rows = TRUE,
-        #show_column_dend = FALSE,
-        #row_dend_side = "right", column_dend_side = "bottom",
-        # cluster methods for rows and columns
-        clustering_distance_columns = function(x) as.dist(1 - cor(t(x))),
-        clustering_method_columns = 'ward.D2',
-        clustering_distance_rows = function(x) as.dist(1 - cor(t(x))),
-        clustering_method_rows = 'ward.D2',
-        column_dend_height = unit(2, "cm"), row_dend_width = unit(2, "cm"),
-        row_names_gp = gpar(fontsize = 10),column_names_gp = gpar(fontsize = 10),
-        left_annotation = heatmap_ann_row, top_annotation = heatmap_ann,
-        column_title = "Pearson Correlation - All elements")
-
-```
-
-
-# Correlation Heatmaps - by genomic annotation 
-
-Merge annotation and vsd
-```{r}
-
-ann_vsd <- as.data.frame(vsd_data) %>%
-  rownames_to_column("Peakid") %>%
-  left_join(ann_table_clean, by="Peakid")
-
-```
-
-Some annotation stats first 
-```{r fig.width=5, fig.height=4}
-ggplot(ann_table_clean, aes(x=Annotation_brief, fill=Annotation_brief)) +
-  geom_bar()
-
-vsd_stats <- as.data.frame(vsd_data)
-vsd_stats$ave_vsd = rowMeans(vsd_data)
-vsd_stats$row_var = rowVars(as.matrix(vsd_data))
-ann_vsd_stat <- vsd_stats %>%
-  rownames_to_column("Peakid") %>%
-  left_join(ann_table_clean, by="Peakid")
-
-orderVar <- order(vsd_stats$row_var, decreasing = TRUE)
-
-#get the variation threshold for the top xx elements
-threshold_var <- vsd_stats[orderVar[100000],"row_var"]
-
-ggplot(ann_vsd_stat, aes(x=Annotation_brief, y=ave_vsd, fill=Annotation_brief)) +
-  geom_violin()
-
-ggplot(ann_vsd_stat, aes(x=Annotation_brief, y=row_var, fill=Annotation_brief)) +
-  geom_violin() +
-  geom_hline(yintercept =threshold_var, linetype="dashed")
-
-#subset most variable for later
-ann_vsd_topvar <- ann_vsd_stat %>%
-  filter(row_var>threshold_var)
-
-```
-
-### Annotated heatmap of Intergenic
-
-```{r fig.width=11,fig.height=11}
-
-ann_vsd_Intergenic <- ann_vsd %>%
-  filter(Annotation_brief=="Intergenic")
-
-ann_vsd_Intergenic_hm <- ann_vsd_Intergenic %>%
-  remove_rownames() %>%
-  column_to_rownames("Peakid") %>%
-  select(starts_with(c("MUT","WT")))
-
-cor_vsd_interg <-cor(ann_vsd_Intergenic_hm)
-
-
-Heatmap(cor_vsd_interg, name="Correlation", col=hm_colors,
-        cluster_columns = TRUE, cluster_rows = TRUE,
-        #show_column_dend = FALSE,
-        #row_dend_side = "right", column_dend_side = "bottom",
-        clustering_distance_columns = function(x) as.dist(1 - cor(t(x))),
-        clustering_method_columns = 'ward.D2',
-        clustering_distance_rows = function(x) as.dist(1 - cor(t(x))),
-        clustering_method_rows = 'ward.D2',
-        column_dend_height = unit(2, "cm"), row_dend_width = unit(2, "cm"),
-        row_names_gp = gpar(fontsize = 10),column_names_gp = gpar(fontsize = 10),
-        left_annotation = heatmap_ann_row, top_annotation = heatmap_ann,
-        column_title = "Pearson Correlation - Intergenic")
-
-```
-### Annotated heatmap of TSS
-
-```{r fig.width=11,fig.height=11}
-
-ann_vsd_TSS <- ann_vsd %>%
-  filter(Annotation_brief=="promoter-TSS")
-
-ann_vsd_TSS_hm <- ann_vsd_TSS %>%
-  remove_rownames() %>%
-  column_to_rownames("Peakid") %>%
-  select(starts_with(c("MUT","WT")))
-
-cor_vsd_TSS <-cor(ann_vsd_TSS_hm)
-
-Heatmap(cor_vsd_TSS, name="Correlation", col=hm_colors,
-        cluster_columns = TRUE, cluster_rows = TRUE,
-        #show_column_dend = FALSE,
-        #row_dend_side = "right", column_dend_side = "bottom",
-        clustering_distance_columns = function(x) as.dist(1 - cor(t(x))),
-        clustering_method_columns = 'ward.D2',
-        clustering_distance_rows = function(x) as.dist(1 - cor(t(x))),
-        clustering_method_rows = 'ward.D2',
-        column_dend_height = unit(2, "cm"), row_dend_width = unit(2, "cm"),
-        row_names_gp = gpar(fontsize = 10),column_names_gp = gpar(fontsize = 10),
-        left_annotation = heatmap_ann_row, top_annotation = heatmap_ann,
-        column_title = "Pearson Correlation - TSS")
-
-
-```
-
-
-### Annotated heatmap of all but TSS
-Or exon because it often includes the TSS
-```{r fig.width=11,fig.height=11}
-
-ann_vsd_nonTSS <- ann_vsd %>%
-  filter(Annotation_brief %in% c("intron","Intergenic","TTS"))
-
-ann_vsd_nonTSS_hm <- ann_vsd_nonTSS %>%
-  remove_rownames() %>%
-  column_to_rownames("Peakid") %>%
-  select(starts_with(c("MUT","WT")))
-
-cor_vsd_nonTSS <-cor(ann_vsd_nonTSS_hm)
-
-Heatmap(cor_vsd_nonTSS, name="Correlation", col=hm_colors,
-        cluster_columns = TRUE, cluster_rows = TRUE,
-        #show_column_dend = FALSE,
-        #row_dend_side = "right", column_dend_side = "bottom",
-        clustering_distance_columns = function(x) as.dist(1 - cor(t(x))),
-        clustering_method_columns = 'ward.D2',
-        clustering_distance_rows = function(x) as.dist(1 - cor(t(x))),
-        clustering_method_rows = 'ward.D2',
-        column_dend_height = unit(2, "cm"), row_dend_width = unit(2, "cm"),
-        row_names_gp = gpar(fontsize = 10),column_names_gp = gpar(fontsize = 10),
-        left_annotation = heatmap_ann_row, top_annotation = heatmap_ann,
-        column_title = "Pearson Correlation - NonTSS or exon")
-
-
-```
-
-
-
-## Plots for presentation
-
-```{r fig.height=5.76, fig.width=6.28}
-
-
-phen_data <- genecolData_first %>%
-  select(c("Sample_ID","DayGate","Day","NFIAstatus")) %>%
-  remove_rownames() %>%
-  column_to_rownames("Sample_ID")
-
-# Build the annotation for the complex heatmap
-heatmap_ann_row <- rowAnnotation(df=phen_data, col=ann_color_JD,
-      annotation_height = unit(1, 'cm'),
-      annotation_width = unit(1, 'cm'),
-      gap = unit(1, 'mm'),
-      annotation_legend_param = list(DayGate = list(at =sorted.DayGate)))
-heatmap_ann <- HeatmapAnnotation(df=phen_data, col=ann_color_JD, show_legend = FALSE,
-    annotation_height = unit(1, 'cm'),
-    annotation_width = unit(1, 'cm'),
-    gap = unit(1, 'mm'))
-
-# Annotated heatmap with selected colors
-hm_colors = colorRampPalette(rev(brewer.pal(n = 11, name = "RdBu")))(100)
-
-col_fun = colorRamp2(seq(0.55,1,length.out= 11) ,
-                     c(colorRampPalette(rev(brewer.pal(n = 11, name = "RdBu")))(11)))
-#c(0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0)
-
-
-hmap_notgenes<- Heatmap(cor_vsd_nonTSS, name="Correlation", col=col_fun,
-        cluster_columns = TRUE, cluster_rows = TRUE,
-        #show_column_dend = FALSE,
-        #row_dend_side = "right", column_dend_side = "bottom",
-        clustering_distance_columns = function(x) as.dist(1 - cor(t(x))),
-        clustering_method_columns = 'ward.D2',
-        clustering_distance_rows = function(x) as.dist(1 - cor(t(x))),
-        clustering_method_rows = 'ward.D2',
-        column_dend_height = unit(2, "cm"), row_dend_width = unit(2, "cm"),
-        row_names_gp = gpar(fontsize = 10),column_names_gp = gpar(fontsize = 10),
-        left_annotation = heatmap_ann_row, top_annotation = heatmap_ann,
-        show_column_names = FALSE,show_row_names = FALSE,
-        column_title = "Pearson Correlation - NonTSS or exon")
-
-draw(hmap_notgenes, heatmap_legend_side = 'left',
-        annotation_legend_side = 'right',
-        row_sub_title_side = 'left')
-
-
-
-hmap_TSS <- Heatmap(cor_vsd_TSS, name="Correlation", col=col_fun,
-        cluster_columns = TRUE, cluster_rows = TRUE,
-        #show_column_dend = FALSE,
-        #row_dend_side = "right", column_dend_side = "bottom",
-        clustering_distance_columns = function(x) as.dist(1 - cor(t(x))),
-        clustering_method_columns = 'ward.D2',
-        clustering_distance_rows = function(x) as.dist(1 - cor(t(x))),
-        clustering_method_rows = 'ward.D2',
-        column_dend_height = unit(2, "cm"), row_dend_width = unit(2, "cm"),
-        row_names_gp = gpar(fontsize = 10),column_names_gp = gpar(fontsize = 10),
-        left_annotation = heatmap_ann_row, top_annotation = heatmap_ann,
-        show_column_names = FALSE,show_row_names = FALSE,
-        column_title = "Pearson Correlation - TSS")
-
-draw(hmap_TSS, heatmap_legend_side = 'left',
-        annotation_legend_side = 'right',
-        row_sub_title_side = 'left')
-
-```
-
-
 
 
 ```{r}
