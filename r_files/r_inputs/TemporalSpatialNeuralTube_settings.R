@@ -1,7 +1,7 @@
 rm(list=ls())
 
 ## choose the directory where your inputs and outputs will be
-workingdir="~/Documents/BriscoeLab/project_TempoSpace_reproduce/"
+workingdir="/Users/delasj/Documents/BriscoeLab/project_TempoSpace_reproduce/"
 
 ## Colors and shapes
 sorted.DayGate <- c("D5_p1","D5_p2","D5_pM",

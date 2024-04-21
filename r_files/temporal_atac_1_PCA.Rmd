@@ -23,7 +23,7 @@ library(circlize)
 
 Before running, change your working directory in `/r_inputs/TemporalSpatialNeuralTube_settings.R` 
 
-The ATAC analysis starts from the output of nf-core atacseq. File: `consensus_peaks.mLb.clN.featureCounts.txt` in dir: ENTER
+The ATAC analysis starts from the output of nf-core atacseq. File: `consensus_peaks.mLb.clN.featureCounts.txt` in dir: `results/bwa/mergedLibrary/macs/broadPeak/consensus/` 
 
 ### Load settings
 
