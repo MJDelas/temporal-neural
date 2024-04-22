@@ -22,7 +22,8 @@ Before running, change your working directory in
 `/r_inputs/TemporalSpatialNeuralTube_settings.R`
 
 The ATAC analysis starts from the output of nf-core atacseq. File:
-`consensus_peaks.mLb.clN.featureCounts.txt` in dir: ENTER
+`consensus_peaks.mLb.clN.featureCounts.txt` in dir:
+`results/bwa/mergedLibrary/macs/broadPeak/consensus/`
 
 ### Load settings
 
@@ -68,6 +69,74 @@ ann_table_clean <- ann_table %>%
 
     ## Warning: Expected 1 pieces. Additional pieces discarded in 87054 rows [2, 3, 4, 8, 11,
     ## 12, 15, 16, 17, 20, 24, 28, 29, 32, 33, 35, 36, 37, 40, 42, ...].
+
+## Differential analysis - ALL SAMPLES
+
+``` r
+count_matrix <- count_table %>%
+  column_to_rownames("Geneid")
+
+## Make metadata file for DESeq
+
+genecolData_first <- data.frame(Sample_ID = colnames(count_matrix))
+genecolData_first <- genecolData_first %>% 
+  separate(Sample_ID,into=c("Genotype","Day","Gate","NFIAgate","Rep"), sep="_", remove=FALSE) %>%
+  mutate(Condition=paste(Genotype,Day,Gate,NFIAgate, sep="_"),
+         DayNFIA=paste(Day,NFIAgate,Genotype,sep = "_"),
+         DayGate=paste(Day,Gate,sep="_"),
+         Experiment=paste(Genotype,Rep,sep="_"),
+         NFIAstatus=paste(NFIAgate,Genotype,sep="_"))
+genecolData_first <- as.data.frame(unclass(genecolData_first))
+
+
+dds <- DESeqDataSetFromMatrix(countData = count_matrix,
+                              colData = genecolData_first,
+                              design = ~ Gate)
+```
+
+    ## Warning in DESeqDataSet(se, design = design, ignoreRank): some variables in
+    ## design formula are characters, converting to factors
+
+``` r
+dds <- DESeq(dds)
+```
+
+    ## estimating size factors
+
+    ## estimating dispersions
+
+    ## gene-wise dispersion estimates
+
+    ## mean-dispersion relationship
+
+    ## final dispersion estimates
+
+    ## fitting model and testing
+
+    ## -- replacing outliers and refitting for 1182 genes
+    ## -- DESeq argument 'minReplicatesForReplace' = 7 
+    ## -- original counts are preserved in counts(dds)
+
+    ## estimating dispersions
+
+    ## fitting model and testing
+
+``` r
+vsd <- varianceStabilizingTransformation(dds,blind = FALSE)
+```
+
+## Export files
+
+Useful for ploting heatmaps elsewhere
+
+``` r
+# Export normalized tables for plotting elsewhere
+dds_counts <- counts(dds, normalized = TRUE)
+vsd_data <- assay(vsd)
+
+write.table(dds_counts, file = paste0(workingdir,outdir,"consensus_peaks.mLb.clN.normCounts.txt"), quote = FALSE, row.names = TRUE)
+write.csv(vsd_data, file = paste0(workingdir,outdir,"/consensus_peaks.mLb.vsd.csv"), quote = FALSE)
+```
 
 ## Differential analysis WT samples
 
@@ -188,7 +257,7 @@ ggplot(vsd_pca_plot, aes(x=-PC1,y=-PC2,fill=Day,shape=Gate)) +
   theme_bw(base_size=16)
 ```
 
-![](temporal_atac_1_PCA_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+![](temporal_atac_1_PCA_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
 ``` r
 ggplot(vsd_pca_plot, aes(x=-PC1,y=-PC2,fill=Gate,shape=Day)) +
@@ -201,7 +270,7 @@ ggplot(vsd_pca_plot, aes(x=-PC1,y=-PC2,fill=Gate,shape=Day)) +
   theme_bw(base_size=16)
 ```
 
-![](temporal_atac_1_PCA_files/figure-gfm/unnamed-chunk-8-2.png)<!-- -->
+![](temporal_atac_1_PCA_files/figure-gfm/unnamed-chunk-10-2.png)<!-- -->
 
 ``` r
 sessionInfo()

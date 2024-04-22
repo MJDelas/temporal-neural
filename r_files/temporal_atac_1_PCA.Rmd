@@ -75,11 +75,52 @@ ann_table_clean <- ann_table %>%
 
 ```
 
+## Differential analysis - ALL SAMPLES
 
+```{r}
+
+
+count_matrix <- count_table %>%
+  column_to_rownames("Geneid")
+
+## Make metadata file for DESeq
+
+genecolData_first <- data.frame(Sample_ID = colnames(count_matrix))
+genecolData_first <- genecolData_first %>% 
+  separate(Sample_ID,into=c("Genotype","Day","Gate","NFIAgate","Rep"), sep="_", remove=FALSE) %>%
+  mutate(Condition=paste(Genotype,Day,Gate,NFIAgate, sep="_"),
+         DayNFIA=paste(Day,NFIAgate,Genotype,sep = "_"),
+         DayGate=paste(Day,Gate,sep="_"),
+         Experiment=paste(Genotype,Rep,sep="_"),
+         NFIAstatus=paste(NFIAgate,Genotype,sep="_"))
+genecolData_first <- as.data.frame(unclass(genecolData_first))
+
+
+dds <- DESeqDataSetFromMatrix(countData = count_matrix,
+                              colData = genecolData_first,
+                              design = ~ Gate)
+
+dds <- DESeq(dds)
+
+vsd <- varianceStabilizingTransformation(dds,blind = FALSE)
+
+```
+
+## Export files 
+Useful for ploting heatmaps elsewhere
+
+```{r }
+# Export normalized tables for plotting elsewhere
+dds_counts <- counts(dds, normalized = TRUE)
+vsd_data <- assay(vsd)
+
+write.table(dds_counts, file = paste0(workingdir,outdir,"consensus_peaks.mLb.clN.normCounts.txt"), quote = FALSE, row.names = TRUE)
+write.csv(vsd_data, file = paste0(workingdir,outdir,"/consensus_peaks.mLb.vsd.csv"), quote = FALSE)
+
+```
 
 
 ## Differential analysis WT samples
-
 
 ```{r}
 
