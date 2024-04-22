@@ -41,7 +41,7 @@ source('./r_inputs/TemporalSpatialNeuralTube_settings.R')
 ```{r}
 
 subworkinput="outputs_glialatac_2_time_space/"
-suboutdir2="output_Space_Specific/"
+suboutdir2="output_Time_Specific/"
 
 outdir="outputs_glialatac_3_timewt_kmeans/"
 ifelse(!dir.exists(file.path(workingdir,outdir)), dir.create(file.path(workingdir,outdir)), "Directory exists")
@@ -63,7 +63,6 @@ Load the diff expression from previous script.
 
 count_vsd <- read.csv(file=paste0(workingdir,"outputs_glialatac_1/","consensus_peaks.mLb.vsd.csv"),header=TRUE, stringsAsFactors = FALSE)
 
-
 ```
 
 
@@ -84,7 +83,7 @@ pM: pairwise D5-D7, D7-D9, D9-D11, D5-D9, D5-D11, D7-D11
 
 PairWiseDEseq_days <- lapply(list.files(path=paste0(workingdir,subworkinput,suboutdir2),pattern="Results_DESeq*", full.names=TRUE),function(x) {
   data <- read.table(x,header=T,stringsAsFactors=F) %>% as.data.frame() %>% rownames_to_column("Intervals")
-  data$Comparison <- gsub(paste0("/Users/delasj/Dropbox \\(The Francis Crick\\)/Glial_cisReg/",subworkinput,suboutdir2,"/Results_DESeq_"),"", x)
+  data$Comparison <- gsub(paste0(workingdir,subworkinput,suboutdir2,"/Results_DESeq_"),"", x)
   data$Comparison <- gsub(".txt","",data$Comparison)
   data
 })
