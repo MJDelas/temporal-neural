@@ -8,7 +8,16 @@ Code associated with the analysis of the manuscript Zhang et al (2024).
 
 ## Data processing
 
-1. ATAC
+### 1. ATAC processing 
+Using nf-core atacseq
+```
+nextflow run nf-core/atacseq \
+	--input design.csv \
+        --genome mm10 \
+    	--skip_diff_analysis \
+    	--min_reps_consensus 2 \
+        -r 1.2.1
+```
 
 2. RNA
 
