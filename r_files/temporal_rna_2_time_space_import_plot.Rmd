@@ -1,0 +1,988 @@
+---
+title: "RNA_2_time_vs_domain_import"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+# RNA analysis
+
+Start the analysis from the exported tables 
+
+```{r message=FALSE}
+
+rm(list=ls())
+
+library(RColorBrewer)
+library(tidyverse)
+library(ComplexHeatmap)
+library(UpSetR)
+
+library(clusterProfiler)
+organism="org.Mm.eg.db"
+library(organism, character.only = TRUE)
+
+```
+
+### Load settings
+
+Colors, main directory 
+
+```{r}
+
+source('./r_inputs/TemporalSpatialNeuralTube_settings.R')
+
+```
+
+
+### Set dirs
+```{r}
+
+subworkinput="outputs_glialrna_2_time_space/"
+
+suboutdir1="output_Domain_Specific/"
+suboutdir2="output_Time_Specific/"
+
+
+```
+
+
+
+## Load data
+
+Load the diff expression from previous script. 
+
+
+## Load vsd to plot heatmaps later
+```{r load-vsd}
+
+count_vsd <- read.csv(file=paste0(workingdir,"outputs_glialRNA_1/","featurecounts.vsd.csv"),header=TRUE, stringsAsFactors = FALSE)
+
+```
+
+
+## Differential analysis between domains for each timepoint
+
+Targeted diff analysis in subsets of samples:
+
+Wild type only:
+D5: pairwise for p1, p2, pMN
+D7: pairwise for p1, p2, pMN
+D9: pairwise for p1, p2, pMN
+D11: pairwise for p1, p2, pMN
+
+Warning in DESeqDataSet(se, design = design, ignoreRank) : some variables in design formula are characters, converting to factors
+## It is an expected warning because the R script change the type of the data from vectors to factors.
+
+re importing does not work because the ~/ gets converted to full name of the dir
+
+Change working dir to local and it'll be fine. For not, this is the patch. 
+```{r  import-domain}
+
+PairWiseDEseq_domain <- lapply(list.files(path=paste0(workingdir,subworkinput,suboutdir1),pattern="Results_DESeq*", full.names=TRUE),function(x) {
+  data <- read.table(x,header=T,stringsAsFactors=F) %>% as.data.frame() %>% rownames_to_column("GeneID")
+  data$Comparison <- gsub(paste0(workingdir,subworkinput,suboutdir1,"/Results_DESeq_"),"", x)
+  data$Comparison <- gsub(".txt","",data$Comparison)
+  data
+})
+
+results_deseq_domain <- do.call(rbind,PairWiseDEseq_domain)
+
+```
+## Differential analysis between timepoints for each domain
+
+Targeted diff analysis in subsets of samples:
+
+Wild type only:
+p1: pairwise D5-D7, D7-D9, D9-D11, D5-D9, D5-D11, D7-D11
+p2: pairwise D5-D7, D7-D9, D9-D11, D5-D9, D5-D11, D7-D11
+pM: pairwise D5-D7, D7-D9, D9-D11, D5-D9, D5-D11, D7-D11
+
+```{r}
+
+PairWiseDEseq_days <- lapply(list.files(path=paste0(workingdir,subworkinput,suboutdir2),pattern="Results_DESeq*", full.names=TRUE),function(x) {
+  data <- read.table(x,header=T,stringsAsFactors=F) %>% as.data.frame() %>% rownames_to_column("GeneID")
+  data$Comparison <- gsub(paste0(workingdir,subworkinput,suboutdir2,"/Results_DESeq_"),"", x)
+  data$Comparison <- gsub(".txt","",data$Comparison)
+  data
+})
+
+results_deseq_days <- do.call(rbind,PairWiseDEseq_days)
+
+```
+
+
+### Thresholds for both time and space comparisons
+
+Based on exploring the data, we have chosen:  
+
+`filter(padj < 0.05 & abs(log2FoldChange) > 1 & baseMean > 80)`
+
+
+
+```{r thresholds}
+
+adjusted_pval = 0.05
+
+log2FC = 1
+
+minBaseMean = 80
+
+
+```
+
+
+
+### How many diff genes genes between domains?
+
+```{r filter-gates}
+
+top_domain_comparisons <- results_deseq_domain %>%
+  as.data.frame() %>%
+  filter(padj < adjusted_pval & abs(log2FoldChange) > log2FC & baseMean > minBaseMean)
+
+ 
+ggplot(top_domain_comparisons, aes(x=Comparison)) +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+
+```
+
+### Are they the same ones?
+
+```{r domains-overlap}
+
+comparison_vector <- top_domain_comparisons$Comparison %>% unique()
+
+list_test <- lapply(comparison_vector, function(x) {
+  top_domain_comparisons[top_domain_comparisons$Comparison==x,"GeneID"]
+})
+names(list_test) <- comparison_vector
+
+#upset(fromList(list_test), sets=comparison_vector, order.by = "degree")
+upset(fromList(list_test), sets=comparison_vector, order.by = "freq")
+
+```
+
+
+
+
+### Get the shared ones 
+
+Do we find the expected genes?
+
+```{r}
+## p1 vs p2
+genes_p1_p2_anydays<- top_domain_comparisons %>% filter(grepl("_Gate_p2_vs_p1", Comparison))
+
+genes_p1_p2_Ncomparisons <- genes_p1_p2_anydays %>% group_by(GeneID) %>% summarise(Ncomparisons=n())
+genes_p1_p2_Ncomparisons %>% arrange(desc(Ncomparisons)) %>% head(20)
+
+
+## pMN vs p1
+
+genes_pM_p1_anydays<- top_domain_comparisons %>% filter(grepl("_Gate_pM_vs_p1", Comparison))
+
+genes_pM_p1_Ncomparisons <- genes_pM_p1_anydays %>% group_by(GeneID) %>% summarise(Ncomparisons=n())
+genes_pM_p1_Ncomparisons %>% arrange(desc(Ncomparisons)) %>% head(20)
+
+
+## pMN vs p2
+genes_pM_p2_anydays<- top_domain_comparisons %>% filter(grepl("_Gate_pM_vs_p2", Comparison))
+
+genes_pM_p2_Ncomparisons <- genes_pM_p1_anydays %>% group_by(GeneID) %>% summarise(Ncomparisons=n())
+genes_pM_p2_Ncomparisons %>% arrange(desc(Ncomparisons)) %>% head(20)
+
+
+```
+
+
+
+### Plot the genes in heatmap to visualize trends?
+
+```{r plot-vsd-diffdomain}
+
+gene_subset <- top_domain_comparisons$GeneID %>% unique()
+
+# filter genes
+vsd_hm <- count_vsd %>%
+  filter(X %in% gene_subset) %>%
+  column_to_rownames("X") %>%
+  dplyr::select(starts_with("WT"))
+
+dim(vsd_hm)
+
+# z score
+vsd_hm_z <- t(scale(t(vsd_hm))) 
+
+# metadata for the heatmap
+genecolData_first <- data.frame(Sample_ID = colnames(vsd_hm))
+genecolData_first <- genecolData_first %>% 
+  separate(Sample_ID,into=c("Genotype","Day","Gate","NFIAgate","Rep"), sep="_", remove=FALSE) %>%
+  mutate(Condition=paste(Genotype,Day,Gate,NFIAgate, sep="_"),
+         DayNFIA=paste(Day,NFIAgate,Genotype,sep = "_"),
+         DayGate=paste(Day,Gate,sep="_"),
+         Experiment=paste(Genotype,Rep,sep="_"),
+         NFIAstatus=paste(NFIAgate,Genotype,sep="_"))
+genecolData_first <- as.data.frame(unclass(genecolData_first))
+
+phen_data <- genecolData_first %>%
+  dplyr::select(c("Sample_ID","DayGate","Day","NFIAstatus","Rep")) %>%
+  remove_rownames() %>%
+  column_to_rownames("Sample_ID")
+
+ann_color_JD <- list(
+  DayGate = c(D5_p1="#abdff4",D5_p2="#f1df9a", D5_pM="#f19aac",
+              D7_p1="#55bee8",D7_p2="#e6c444",D7_pM="#e64466",
+              D9_p1="#1a91c1",D9_p2="#c19e1a",D9_pM="#c11a3d",
+              D11_p1="#0e506b",D11_p2="#6b570e",D11_pM="#7c1127"),
+  NFIAstatus = c(NFIAn_WT="#f6f6f6",NFIAp_WT="#cecece",`100`="#808080",NFIAn_MUT="#595959"),
+  Day = c(D5="#fadede",D7="#f3aaaa",D9="#e96666",D11="#cf1e1e"),
+  Rep = c(R1="#ebeb77", R2="#77b1eb", R3="#eb7777"))
+
+
+
+# Annotated heatmap with selected colors
+hm_colors = colorRampPalette(rev(brewer.pal(n = 11, name = "RdBu")))(100)
+
+
+# Build the annotation for the complex heatmap
+colAnn <- HeatmapAnnotation(
+    df = phen_data,
+    which = 'col', # 'col' (samples) or 'row' (gene) annotation?
+    na_col = 'white', # default colour for any NA values in the annotation data-frame, 'ann'
+    col = ann_color_JD,
+    annotation_height = 0.6,
+    annotation_width = unit(1, 'cm'),
+    gap = unit(1, 'mm'))
+
+
+
+hmap <- Heatmap(vsd_hm_z,
+
+    name = 'Z-score',
+
+    col = hm_colors,
+
+    # row (gene) parameters
+      cluster_rows = TRUE,
+      show_row_dend = TRUE,
+      #row_title = 'Statistically significant genes',
+      row_title_side = 'left',
+      row_title_gp = gpar(fontsize = 12,  fontface = 'bold'),
+      row_title_rot = 90,
+      show_row_names = FALSE,
+      row_names_gp = gpar(fontsize = 10, fontface = 'bold'),
+      row_names_side = 'left',
+      row_dend_width = unit(25,'mm'),
+
+    # column (sample) parameters
+      cluster_columns = TRUE,
+      show_column_dend = TRUE,
+      column_title = '',
+      column_title_side = 'bottom',
+      column_title_gp = gpar(fontsize = 12, fontface = 'bold'),
+      column_title_rot = 0,
+      show_column_names = TRUE,
+      column_names_gp = gpar(fontsize = 8),
+      column_names_max_height = unit(10, 'cm'),
+      column_dend_height = unit(25,'mm'),
+
+    # cluster methods for rows and columns
+      clustering_distance_columns = function(x) as.dist(1 - cor(t(x))),
+      clustering_method_columns = 'ward.D2',
+      clustering_distance_rows = function(x) as.dist(1 - cor(t(x))),
+      clustering_method_rows = 'ward.D2',
+
+    # specify top and bottom annotations
+      top_annotation = colAnn)
+
+```
+
+
+```{r fig.height=9, fig.width=11}
+
+draw(hmap,
+    heatmap_legend_side = 'left',
+    annotation_legend_side = 'left',
+    row_sub_title_side = 'left')
+
+```
+
+### Explore genes by timepoint
+
+### How many diff genes genes between timepoints?
+
+```{r filter-days}
+
+top_days_comparisons <- results_deseq_days %>%
+  as.data.frame() %>%
+  filter(padj < adjusted_pval & abs(log2FoldChange) > log2FC & baseMean > minBaseMean)
+
+ggplot(top_days_comparisons, aes(x=Comparison)) +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+
+
+
+```
+
+### Are they the same ones?
+
+```{r time-overlap, fig.width=8, fig.height=6}
+
+comparison_vector <- top_days_comparisons$Comparison %>% unique()
+
+list_test <- lapply(comparison_vector, function(x) {
+  top_days_comparisons[top_days_comparisons$Comparison==x,"GeneID"]
+})
+names(list_test) <- comparison_vector
+
+#upset(fromList(list_test), sets=comparison_vector, order.by = "degree")
+upset(fromList(list_test), sets=comparison_vector, order.by = "freq")
+
+```
+
+#### Export gene list
+```{r export-time-genes}
+
+write.csv(top_days_comparisons,
+          paste0(workingdir,subworkinput,"Top_days_genes_vsd.csv"),
+          quote = FALSE)
+
+```
+
+### Plot the Genes in heatmap to visualize trends?
+
+
+```{r plot-vsd-difftime}
+
+gene_subset <- top_days_comparisons$GeneID %>% unique()
+
+# filter genes
+vsd_hm <- count_vsd %>%
+  filter(X %in% gene_subset) %>%
+  column_to_rownames("X") %>%
+  dplyr::select(starts_with("WT"))
+
+dim(vsd_hm)
+
+# z score
+vsd_hm_z <- t(scale(t(vsd_hm))) 
+
+# metadata for the heatmap
+genecolData_first <- data.frame(Sample_ID = colnames(vsd_hm))
+genecolData_first <- genecolData_first %>% 
+  separate(Sample_ID,into=c("Genotype","Day","Gate","NFIAgate","Rep"), sep="_", remove=FALSE) %>%
+  mutate(Condition=paste(Genotype,Day,Gate,NFIAgate, sep="_"),
+         DayNFIA=paste(Day,NFIAgate,Genotype,sep = "_"),
+         DayGate=paste(Day,Gate,sep="_"),
+         Experiment=paste(Genotype,Rep,sep="_"),
+         NFIAstatus=paste(NFIAgate,Genotype,sep="_"))
+genecolData_first <- as.data.frame(unclass(genecolData_first))
+
+phen_data <- genecolData_first %>%
+  dplyr::select(c("Sample_ID","DayGate","Day","NFIAstatus","Rep")) %>%
+  remove_rownames() %>%
+  column_to_rownames("Sample_ID")
+
+ann_color_JD <- list(
+  DayGate = c(D5_p1="#abdff4",D5_p2="#f1df9a", D5_pM="#f19aac",
+              D7_p1="#55bee8",D7_p2="#e6c444",D7_pM="#e64466",
+              D9_p1="#1a91c1",D9_p2="#c19e1a",D9_pM="#c11a3d",
+              D11_p1="#0e506b",D11_p2="#6b570e",D11_pM="#7c1127"),
+  NFIAstatus = c(NFIAn_WT="#f6f6f6",NFIAp_WT="#cecece",`100`="#808080",NFIAn_MUT="#595959"),
+  Day = c(D5="#fadede",D7="#f3aaaa",D9="#e96666",D11="#cf1e1e"),
+  Rep = c(R1="#ebeb77", R2="#77b1eb", R3="#eb7777"))
+
+
+
+# Annotated heatmap with selected colors
+hm_colors = colorRampPalette(rev(brewer.pal(n = 11, name = "RdBu")))(100)
+
+
+# Build the annotation for the complex heatmap
+colAnn <- HeatmapAnnotation(
+    df = phen_data,
+    which = 'col', # 'col' (samples) or 'row' (gene) annotation?
+    na_col = 'white', # default colour for any NA values in the annotation data-frame, 'ann'
+    col = ann_color_JD,
+    annotation_height = 0.6,
+    annotation_width = unit(1, 'cm'),
+    gap = unit(1, 'mm'))
+
+
+
+hmap <- Heatmap(vsd_hm_z,
+
+    name = 'Z-score',
+
+    col = hm_colors,
+    
+    use_raster = TRUE, ## because it has many rows
+
+    # row (gene) parameters
+      cluster_rows = TRUE,
+      show_row_dend = TRUE,
+      #row_title = 'Statistically significant genes',
+      row_title_side = 'left',
+      row_title_gp = gpar(fontsize = 12,  fontface = 'bold'),
+      row_title_rot = 90,
+      show_row_names = FALSE,
+      row_names_gp = gpar(fontsize = 10, fontface = 'bold'),
+      row_names_side = 'left',
+      row_dend_width = unit(25,'mm'),
+
+    # column (sample) parameters
+      cluster_columns = TRUE,
+      show_column_dend = TRUE,
+      column_title = '',
+      column_title_side = 'bottom',
+      column_title_gp = gpar(fontsize = 12, fontface = 'bold'),
+      column_title_rot = 0,
+      show_column_names = TRUE,
+      column_names_gp = gpar(fontsize = 8),
+      column_names_max_height = unit(10, 'cm'),
+      column_dend_height = unit(25,'mm'),
+
+    # cluster methods for rows and columns
+      clustering_distance_columns = function(x) as.dist(1 - cor(t(x))),
+      clustering_method_columns = 'ward.D2',
+      clustering_distance_rows = function(x) as.dist(1 - cor(t(x))),
+      clustering_method_rows = 'ward.D2',
+
+    # specify top and bottom annotations
+      top_annotation = colAnn)
+
+```
+
+
+```{r fig.height=8, fig.width=9}
+
+draw(hmap,
+    heatmap_legend_side = 'left',
+    annotation_legend_side = 'left',
+    row_sub_title_side = 'left')
+
+```
+
+
+### Plot number of genes changing in time and space
+
+```{r, fig.width=8, fig.height=2.5}
+# head(top_days_comparisons)
+# head(top_domain_comparisons)
+
+
+top_combined_comparisons <- rbind(top_days_comparisons,top_domain_comparisons)
+
+#tidy
+top_combined_comparisons <- top_combined_comparisons %>%
+  separate(Comparison, into = c("empty","faceting","dimension","dim1","vs","dim2"), sep = "_")  %>%
+  mutate(dim2=factor(dim2, levels=c("D11","D7","D5","p2","p1")),
+         dim1=factor(dim1, levels=c("p2","pM","D5","D7","D9")))
+
+ggplot(top_combined_comparisons, aes(x=dim1, y=dim2)) +
+  geom_count(aes(color=dimension)) +
+  scale_size(range = c(1,9), breaks = seq(0,10000, by=1000)) + 
+  facet_grid(dimension ~ faceting, scales = "free") +
+  theme_bw()
+
+```
+
+#### Domain genes 
+
+Make a table with the counts. Select genes that either 
+
+- differentially expressed in a specific comparison (pMN vs p2) at more than one timepoint (that was 128 genes), or
+- differentially expressed in multiple comparisons (pMN vs p2 AND pMN vs p1) even if just one timepoint
+
+```{r}
+
+top_combined_comparisons_count <- top_combined_comparisons %>%
+  filter(dimension=="Gate") %>%
+  mutate(pairwise_comparison=paste(dim1,vs,dim2)) %>% 
+  group_by(dimension,pairwise_comparison,GeneID) %>%
+  mutate(count_comparisons = n()) %>%
+  group_by(dimension,faceting, dim1,GeneID) %>%
+  mutate(count_dim1= n())
+
+top_domain_2ormorecomparisons <- top_combined_comparisons_count %>%
+  filter(count_comparisons > 1 | count_dim1 >1)
+  
+length(top_domain_2ormorecomparisons$GeneID %>% unique())
+
+```
+
+
+Export this list:
+
+```{r}
+
+write.csv(top_domain_2ormorecomparisons,
+          paste0(workingdir,subworkinput,"Genes_domains_two-or-more_comparisons.csv"),
+          quote = FALSE)
+
+
+```
+
+#### Temporal genes: high confidence ALL domain genes
+
+```{r}
+
+top_temporal_comparisons_count <- top_combined_comparisons %>%
+  filter(dimension=="Day") %>%
+  mutate(pairwise_comparison=paste(dim1,vs,dim2)) %>% 
+  group_by(dimension,pairwise_comparison,GeneID) %>%
+  mutate(count_comparisons = n()) %>%
+  group_by(dimension,faceting, dim1,GeneID) %>%
+  mutate(count_dim1= n())
+
+# this filters genes that are diff express in at least 1 temporal comparisons in all 3 domains
+top_temporal_2ormorecomparisons <- top_temporal_comparisons_count %>%
+  filter(count_comparisons == 3 & count_dim1 > 1)
+
+# I could further add genes in fewer cell types but more comparisons
+#  filter(count_comparisons > 2 | count_dim1 >1)
+  
+length(top_temporal_2ormorecomparisons$GeneID %>% unique())
+
+
+```
+
+
+Export this list:
+
+```{r}
+
+write.csv(top_temporal_2ormorecomparisons,
+          paste0(workingdir,subworkinput,"Genes_temporal_alldomains.csv"),
+          quote = FALSE)
+
+
+```
+
+### Plot the temporal all domain genes 
+
+
+```{r plot-vsd-ALLdifftime}
+
+gene_subset <- top_temporal_2ormorecomparisons$GeneID %>% unique()
+
+# filter genes
+vsd_hm <- count_vsd %>%
+  filter(X %in% gene_subset) %>%
+  column_to_rownames("X") %>%
+  dplyr::select(starts_with("WT"))
+
+dim(vsd_hm)
+
+# z score
+vsd_hm_z <- t(scale(t(vsd_hm))) 
+
+# metadata for the heatmap
+genecolData_first <- data.frame(Sample_ID = colnames(vsd_hm))
+genecolData_first <- genecolData_first %>% 
+  separate(Sample_ID,into=c("Genotype","Day","Gate","NFIAgate","Rep"), sep="_", remove=FALSE) %>%
+  mutate(Condition=paste(Genotype,Day,Gate,NFIAgate, sep="_"),
+         DayNFIA=paste(Day,NFIAgate,Genotype,sep = "_"),
+         DayGate=paste(Day,Gate,sep="_"),
+         Experiment=paste(Genotype,Rep,sep="_"),
+         NFIAstatus=paste(NFIAgate,Genotype,sep="_"))
+genecolData_first <- as.data.frame(unclass(genecolData_first))
+
+phen_data <- genecolData_first %>%
+  dplyr::select(c("Sample_ID","DayGate","Day","NFIAstatus","Rep")) %>%
+  remove_rownames() %>%
+  column_to_rownames("Sample_ID")
+
+ann_color_JD <- list(
+  DayGate = c(D5_p1="#abdff4",D5_p2="#f1df9a", D5_pM="#f19aac",
+              D7_p1="#55bee8",D7_p2="#e6c444",D7_pM="#e64466",
+              D9_p1="#1a91c1",D9_p2="#c19e1a",D9_pM="#c11a3d",
+              D11_p1="#0e506b",D11_p2="#6b570e",D11_pM="#7c1127"),
+  NFIAstatus = c(NFIAn_WT="#f6f6f6",NFIAp_WT="#cecece",`100`="#808080",NFIAn_MUT="#595959"),
+  Day = c(D5="#fadede",D7="#f3aaaa",D9="#e96666",D11="#cf1e1e"),
+  Rep = c(R1="#ebeb77", R2="#77b1eb", R3="#eb7777"))
+
+
+
+# Annotated heatmap with selected colors
+hm_colors = colorRampPalette(rev(brewer.pal(n = 11, name = "RdBu")))(100)
+
+
+# Build the annotation for the complex heatmap
+colAnn <- HeatmapAnnotation(
+    df = phen_data,
+    which = 'col', # 'col' (samples) or 'row' (gene) annotation?
+    na_col = 'white', # default colour for any NA values in the annotation data-frame, 'ann'
+    col = ann_color_JD,
+    annotation_height = 0.6,
+    annotation_width = unit(1, 'cm'),
+    gap = unit(1, 'mm'))
+
+
+
+hmap <- Heatmap(vsd_hm_z,
+
+    name = 'Z-score',
+
+    col = hm_colors,
+    
+    use_raster = TRUE, ## because it has many rows
+
+    # row (gene) parameters
+      cluster_rows = TRUE,
+      show_row_dend = TRUE,
+      #row_title = 'Statistically significant genes',
+      row_title_side = 'left',
+      row_title_gp = gpar(fontsize = 12,  fontface = 'bold'),
+      row_title_rot = 90,
+      show_row_names = FALSE,
+      row_names_gp = gpar(fontsize = 10, fontface = 'bold'),
+      row_names_side = 'left',
+      row_dend_width = unit(25,'mm'),
+
+    # column (sample) parameters
+      cluster_columns = TRUE,
+      show_column_dend = TRUE,
+      column_title = '',
+      column_title_side = 'bottom',
+      column_title_gp = gpar(fontsize = 12, fontface = 'bold'),
+      column_title_rot = 0,
+      show_column_names = TRUE,
+      column_names_gp = gpar(fontsize = 8),
+      column_names_max_height = unit(10, 'cm'),
+      column_dend_height = unit(25,'mm'),
+
+    # cluster methods for rows and columns
+      clustering_distance_columns = function(x) as.dist(1 - cor(t(x))),
+      clustering_method_columns = 'ward.D2',
+      clustering_distance_rows = function(x) as.dist(1 - cor(t(x))),
+      clustering_method_rows = 'ward.D2',
+
+    # specify top and bottom annotations
+      top_annotation = colAnn)
+
+```
+
+
+```{r fig.height=8, fig.width=9}
+
+draw(hmap,
+    heatmap_legend_side = 'left',
+    annotation_legend_side = 'left',
+    row_sub_title_side = 'left')
+
+```
+
+
+## Temporal program figures
+
+```{r}
+
+# filter genes
+vsd_hm_ave <- count_vsd %>%
+  filter(X %in% gene_subset) %>%
+  dplyr::select(starts_with("WT"),"X") %>% 
+  pivot_longer(names_to = "sampleid", values_to = "normcounts", starts_with("WT")) %>%
+  separate(sampleid, into=c("Genotype","Day","Gate","NFIAgate","Rep"), sep="_", remove=FALSE) %>%
+  group_by(X, Genotype, Day, Gate) %>%
+  summarise(avecount=mean(normcounts)) %>%
+  mutate(condition=paste(Genotype,Day,Gate, sep = "_")) %>%
+  ungroup() %>%
+  dplyr::select(X, condition,avecount) %>%
+  pivot_wider(names_from = condition, values_from = avecount) %>%
+  column_to_rownames("X")
+  
+dim(vsd_hm_ave)
+
+# z score
+vsd_hm_z <- t(scale(t(vsd_hm_ave))) 
+
+
+# metadata for the heatmap
+genecolData_first <- data.frame(Sample_ID = colnames(vsd_hm_ave))
+genecolData_first <- genecolData_first %>% 
+  separate(Sample_ID,into=c("Genotype","Day","Gate"), sep="_", remove=FALSE) %>%
+  mutate(DayGate=paste(Day,Gate,sep="_"))
+genecolData_first <- as.data.frame(unclass(genecolData_first))
+
+phen_data <- genecolData_first %>%
+  dplyr::select(c("Sample_ID","DayGate","Day")) %>%
+  remove_rownames() %>%
+  column_to_rownames("Sample_ID")
+
+ann_color_JD <- list(
+  DayGate = c(D5_p1="#abdff4",D5_p2="#f1df9a", D5_pM="#f19aac",
+              D7_p1="#55bee8",D7_p2="#e6c444",D7_pM="#e64466",
+              D9_p1="#1a91c1",D9_p2="#c19e1a",D9_pM="#c11a3d",
+              D11_p1="#0e506b",D11_p2="#6b570e",D11_pM="#7c1127"),
+  Day = c(D5="#fadede",D7="#f3aaaa",D9="#e96666",D11="#cf1e1e"))
+
+
+# Build the annotation for the complex heatmap
+colAnn <- HeatmapAnnotation(
+    df = phen_data,
+    which = 'col', # 'col' (samples) or 'row' (gene) annotation?
+    na_col = 'white', # default colour for any NA values in the annotation data-frame, 'ann'
+    col = ann_color_JD,
+    annotation_height = 0.6,
+    annotation_width = unit(1, 'cm'),
+    gap = unit(1, 'mm'))
+
+
+
+
+set.seed(123)  #For reproduciblity
+
+hmap <- Heatmap(vsd_hm_z,
+              km=6,
+
+              name = 'Z-score',
+
+    col = hm_colors,
+    
+    use_raster = TRUE, ## because it has many rows
+
+    # row (gene) parameters
+      cluster_rows = TRUE,
+      show_row_dend = TRUE,
+      #row_title = 'Statistically significant genes',
+      row_title_side = 'left',
+      row_title_gp = gpar(fontsize = 12,  fontface = 'bold'),
+      row_title_rot = 90,
+      show_row_names = FALSE,
+      row_names_gp = gpar(fontsize = 10, fontface = 'bold'),
+      row_names_side = 'left',
+      row_dend_width = unit(25,'mm'),
+
+    # column (sample) parameters
+      cluster_columns = TRUE,
+      show_column_dend = TRUE,
+      column_title = '',
+      column_title_side = 'bottom',
+      column_title_gp = gpar(fontsize = 12, fontface = 'bold'),
+      column_title_rot = 0,
+      show_column_names = TRUE,
+      column_names_gp = gpar(fontsize = 8),
+      column_names_max_height = unit(10, 'cm'),
+      column_dend_height = unit(25,'mm'),
+
+    # cluster methods for rows and columns
+      clustering_distance_columns = function(x) as.dist(1 - cor(t(x))),
+      clustering_method_columns = 'ward.D2',
+      clustering_distance_rows = function(x) as.dist(1 - cor(t(x))),
+      clustering_method_rows = 'ward.D2',
+
+    # specify top and bottom annotations
+      top_annotation = colAnn)
+
+
+```
+
+
+```{r fig.height=6, fig.width=5}
+
+hmap <- draw(hmap,
+    heatmap_legend_side = 'left',
+    annotation_legend_side = 'left',
+    row_sub_title_side = 'left')
+
+```
+
+
+```{r}
+# print heatmap
+pdf(paste0(workingdir,subworkinput,"Heatmap_TempoRNA_clusters.pdf"), width = 5, height = 6) 
+
+draw(hmap,
+    heatmap_legend_side = 'left',
+    annotation_legend_side = 'left',
+    row_sub_title_side = 'left')
+
+dev.off()
+```
+
+
+```{r}
+
+r.dend <- row_dend(hmap)  #Extract row dendrogram
+rcl.list <- row_order(hmap)  #Extract clusters (output is a list)
+
+lapply(rcl.list, function(x) length(x))  #check/confirm size clusters
+
+# loop to extract genes for each cluster.
+for (i in 1:length(row_order(hmap))){
+ if (i == 1) {
+ clu <- t(t(row.names(vsd_hm_z[row_order(hmap)[[i]],])))
+ out <- cbind(clu, paste("cluster", i, sep=""))
+ colnames(out) <- c("GeneID", "Cluster")
+ } else {
+ clu <- t(t(row.names(vsd_hm_z[row_order(hmap)[[i]],])))
+ clu <- cbind(clu, paste("cluster", i, sep=""))
+ out <- rbind(out, clu)
+ }
+ }
+
+
+write.csv(out, file =paste0(workingdir,subworkinput,"TemporalALLgenes_clustered.csv"),
+          quote = FALSE )
+
+```
+
+
+### GO enrichment attempts
+
+```{r message=FALSE}
+
+
+
+keytypes(org.Mm.eg.db)
+```
+
+```{r}
+
+clusterlist <- out[,2] %>% unique() %>% as.list()
+
+go_enrichment_allcluster <- lapply(clusterlist, function(x){
+  df = as.data.frame(out) %>% filter(Cluster==x)
+  
+  #get the most complete gene list without NAs
+  gene_list <- bitr(df$GeneID, fromType = "ALIAS",
+                toType = c("SYMBOL", "ENTREZID"),
+                OrgDb = organism)
+  
+  # run GO
+  ego2 <- enrichGO(gene         = gene_list$SYMBOL,
+                OrgDb         = organism,
+                keyType       = 'SYMBOL',
+                ont           = "ALL",pool=TRUE,
+                pAdjustMethod = "fdr",
+                pvalueCutoff  = 0.05, # these are the defaults
+                qvalueCutoff  = 0.2)
+  
+  #dotplot(ego2, title=x)
+  
+  go_results <- as.data.frame(ego2)
+  go_results$cluster <- df$Cluster %>% unique()
+  go_results
+})
+
+go_enrichment_df <- do.call(rbind, go_enrichment_allcluster)
+
+# This is for one by one
+# df = as.data.frame(out) %>% filter(Cluster=="cluster3")
+# 
+# #gene_list = df$GeneID
+# 
+# # is it SYMBOL? yes, but sometimes there are some missing clean up - ALIAS works best at finding them
+# gene_list <- bitr(df$GeneID, fromType = "ALIAS",
+#                 toType = c("SYMBOL", "ENTREZID"),
+#                 OrgDb = organism)
+# 
+# ego2 <- enrichGO(gene         = gene_list$SYMBOL,
+#                 OrgDb         = organism,
+#                 keyType       = 'SYMBOL',
+#                 ont           = "ALL",pool=TRUE,
+#                 pAdjustMethod = "fdr",
+#                 pvalueCutoff  = 0.05, # these are the defaults
+#                 qvalueCutoff  = 0.2)
+# 
+# head(ego2, 10)
+# 
+# #goplot(ego2)
+# dotplot(ego2)
+
+```
+
+
+plot 
+
+```{r fig.width=8, fig.height=10}
+
+#GeneRatio to actually be a ratio
+go_enrichment_df$GeneRatio <- sapply(strsplit(go_enrichment_df$GeneRatio, "/"), function(x) as.numeric(x[1])/as.numeric(x[2]))
+
+go_enrichment_plot <- go_enrichment_df %>%
+  mutate(Description = fct_reorder(Description, Count)) %>%
+  group_by(cluster,ONTOLOGY) %>%
+  slice_min(p.adjust,n=10) %>%
+  mutate(cluster=factor(cluster, level=c("cluster5","cluster6","cluster4","cluster3","cluster2","cluster1")))
+
+ggplot(go_enrichment_plot %>% filter(ONTOLOGY=="BP"), aes(x=GeneRatio, y=Description)) +
+  geom_point(aes(color=p.adjust, size=Count))+
+  scale_color_gradientn(colours = colorspace::diverge_hcl(7, rev=TRUE)) +
+  facet_grid(cluster ~ ONTOLOGY, scales = "free_y",space = "free_y")
+
+```
+
+
+```{r fig.width=6, fig.height=5}
+
+plot_go <- ggplot(go_enrichment_plot %>% filter(ONTOLOGY=="BP") %>% 
+                 group_by(cluster,ONTOLOGY) %>%  
+                 slice_min(p.adjust,n=2) %>% # smallest p.adj
+                 slice_min(pvalue,n=2) %>% # if same p.adj then min pval
+                 slice_max(GeneRatio,n=2) , # if both of the above the same, then max genes
+               aes(x=GeneRatio, y=Description)) +
+          geom_point(aes(color=p.adjust, size=Count))+
+          scale_color_gradientn(colours = colorspace::diverge_hcl(7, rev=TRUE)) +
+          facet_grid(cluster ~ ONTOLOGY, scales = "free_y",space = "free_y") +
+          theme_bw(base_size = 14)
+
+ggsave(paste0(workingdir,subworkinput,"BubblePlot_GOenrich.pdf"), plot=plot_go,
+             width=6, height=5, units="in", useDingbats=FALSE)
+
+plot_go
+
+```
+
+
+
+#### Different option: functional group first
+
+This just highlights clusters 2 and 3
+
+```{r}
+# go_enrichment_allclusterBP <- lapply(clusterlist, function(x){
+#   df = as.data.frame(out) %>% filter(Cluster==x)
+#   
+#   #get the most complete gene list without NAs
+#   gene_list <- bitr(df$GeneID, fromType = "ALIAS",
+#                 toType = c("SYMBOL", "ENTREZID"),
+#                 OrgDb = organism)
+#   
+#   # run GO
+#   ego2 <- enrichGO(gene         = gene_list$SYMBOL,
+#                 OrgDb         = organism,
+#                 keyType       = 'SYMBOL',
+#                 ont           = "BP",
+#                 pAdjustMethod = "fdr",
+#                 pvalueCutoff  = 0.05, # these are the defaults
+#                 qvalueCutoff  = 0.2)
+#   
+#   #dotplot(ego2, title=x)
+#   
+#   go_results <- as.data.frame(ego2)
+#   go_results$cluster <- df$Cluster %>% unique()
+#   go_results
+# })
+# 
+# 
+# simplifyGOFromMultipleLists(go_enrichment_allclusterBP, go_id_column="ID",padj_column="p.adjust", ont="BP")
+
+```
+
+
+
+
+```{r}
+sessionInfo()
+```

@@ -22,6 +22,12 @@ GEO
     - Fig 1 ATAC space vs time quantifications
     - Fig 1 temporal heatmap
 
+- [RNA 1](r_files/temporal_rna_1_export_tables.md)
+    - Export normalized tables for plotting heatmaps and genes
+- [RNA 2](r_files/temporal_rna_2_time_space.md)
+    - Calculate RNA diff expression for all pairwise comparisons
+- [RNA 3](r_files)
+
 - [Fig 2 footprints and TF expression]
 - [Fig 2 screen results]
 - [Fig 2 Eed, Ezh2, Brd8 mutant effects]

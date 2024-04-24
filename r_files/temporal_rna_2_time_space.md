@@ -120,11 +120,6 @@ Targeted diff analysis in subsets of samples:
 Wild type only: D5: pairwise for p1, p2, pMN D7: pairwise for p1, p2,
 pMN D9: pairwise for p1, p2, pMN D11: pairwise for p1, p2, pMN
 
-Warning in DESeqDataSet(se, design = design, ignoreRank) : some
-variables in design formula are characters, converting to factors \## It
-is an expected warning because the R script change the type of the data
-from vectors to factors.
-
 This DESeq2 analysis is done by subsetting samples. I subset the
 `txi.salmon$counts` table and then use `DESeqDataSetFromMatrix` with
 `round(sub_counts)` to perform the differential analysis.

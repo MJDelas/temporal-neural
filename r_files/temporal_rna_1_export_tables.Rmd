@@ -1,0 +1,144 @@
+---
+title: "RNA Deseq"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# RNA analysis
+Re-analysis after nf-core/rnaseq 3.5
+
+```{r message=FALSE}
+
+rm(list=ls())
+
+library(DESeq2)
+library(RColorBrewer)
+library(tidyverse)
+library(ComplexHeatmap)
+library(tximport)
+
+```
+
+### Load settings
+
+Colors, main directory 
+
+```{r}
+
+source('./r_inputs/TemporalSpatialNeuralTube_settings.R')
+
+```
+
+
+### Set dirs
+```{r}
+
+subworkinput="inputs_glialRNA_1_qc/"
+
+outdir="outputs_glialRNA_1/"
+ifelse(!dir.exists(file.path(workingdir,outdir)), dir.create(file.path(workingdir,outdir)), "Directory exists")
+
+
+
+```
+
+
+## Load data
+
+
+For RNA analysis, we are using the output of star_salmon from `nf-core rnaseq`. Pipeline outpout directory: `results/star_salmon`
+
+
+
+```{r }
+
+
+#salmon counts from pipeline, import
+path_files =  list.files(paste0(workingdir,subworkinput)) 
+samples = data.frame(run=path_files, stringsAsFactors = FALSE) %>%
+  filter(str_detect(run, "MUT|WT"))
+
+files <- file.path(paste0(workingdir,subworkinput), samples$run, "quant.sf")
+names(files) <- samples$run
+all(file.exists(files))
+
+#from pipeline
+tx2gene = read_tsv(paste0(paste0(workingdir,subworkinput),"/salmon_tx2gene.tsv"))
+
+txi.salmon <- tximport(files, type = "salmon", tx2gene = tx2gene)
+#head(txi.salmon$counts)
+
+```
+
+genes named Geneid
+
+
+## qc samples 
+
+```{r fig.height=9, fig.width=6}
+
+count.table <- txi.salmon$counts
+
+```
+
+# Diff expression 
+
+The `DESeqDataSetFromTximport` was just re-loading the full matrix (with ERCC). I am trying rounding the data after subsetting and importing as usual with `DESeqDataSetFromMatrix`. 
+
+```{r good-deseq}
+
+count.matrix <- count.table %>%
+  as.data.frame() %>%
+  rownames_to_column("GeneID") %>%
+  filter(!str_starts(GeneID, "ERCC")) %>%
+  column_to_rownames("GeneID")
+
+## Make metadata file for DESeq
+
+genecolData_first <- data.frame(Sample_ID = colnames(count.matrix))
+genecolData_first <- genecolData_first %>% 
+  separate(Sample_ID,into=c("Genotype","Day","Gate","NFIAgate","Rep"), sep="_", remove=FALSE) %>%
+  mutate(Condition=paste(Genotype,Day,Gate,NFIAgate, sep="_"),
+         DayNFIA=paste(Day,NFIAgate,Genotype,sep = "_"),
+         DayGate=paste(Day,Gate,sep="_"),
+         Experiment=paste(Genotype,Rep,sep="_"),
+         NFIAstatus=paste(NFIAgate,Genotype,sep="_"))
+genecolData_first <- as.data.frame(unclass(genecolData_first))
+
+
+# dds <- DESeqDataSetFromTximport(txi = txi.salmon,
+#                               colData = genecolData_first,
+#                               design = ~ Gate)
+
+dds <- DESeqDataSetFromMatrix(countData = round(count.matrix),
+                              colData = genecolData_first,
+                              design = ~ Gate)
+
+
+dds <- DESeq(dds)
+
+vsd <- varianceStabilizingTransformation(dds,blind = FALSE)
+
+```
+
+## Export files 
+
+```{r }
+# Export normalized tables for plotting elsewhere
+dds_counts <- counts(dds, normalized = TRUE)
+vsd_data <- assay(vsd)
+
+write.table(dds_counts, file = paste0(workingdir,outdir,"featurecounts.normCounts.txt"), quote = FALSE, row.names = TRUE)
+write.csv(vsd_data, file = paste0(workingdir,outdir,"featurecounts.vsd.csv"), quote = FALSE)
+
+```
+
+
+```{r}
+sessionInfo()
+```
+
+
