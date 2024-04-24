@@ -17,6 +17,7 @@ sorted.dayNfia <- c("D5_NFIAn_WT","D5_NFIAn_MUT",
 
 sorted.sample <- c("WT_D5_p1_NFIAn","WT_D5_p2_NFIAn","WT_D5_pM_NFIAn","WT_D7_p1_NFIAn","WT_D7_p2_NFIAn","WT_D7_pM_NFIAn","WT_D9_p1_NFIAn","WT_D9_p2_NFIAn","WT_D9_p2_NFIAp","WT_D9_pM_NFIAn","WT_D9_pM_NFIAp","WT_D11_p1_NFIAp","WT_D11_p2_NFIAp","WT_D11_pM_NFIAp")
 
+gates <- c("p1","p2","pM")
 
 colorIZ <- c("#abdff4","#f1df9a","#f19aac",
              "#55bee8","#e6c444","#e64466",
