@@ -8,8 +8,8 @@ Code associated with the analysis of the manuscript Zhang et al (2024).
 
 ## Data processing
 
-### 1. ATAC processing 
-Using nf-core atacseq
+### 1. ATACseq processing 
+Using [nf-core/atacseq](https://nf-co.re/atacseq)
 ```
 nextflow run nf-core/atacseq \
 	--input design.csv \
@@ -19,7 +19,18 @@ nextflow run nf-core/atacseq \
         -r 1.2.1
 ```
 
-2. RNA
+### 2. RNAseq processing
+Using [nf-core/rnaseq](https://nf-co.re/rnaseq)
+```
+nextflow run nf-core/rnaseq \
+        --input design.csv \
+        --genome mm10 \
+        --aligner star_salmon \
+        --star_index false \
+        --skip_biotype_qc \
+    	--deseq2_vst \
+        -r 3.5
+```
 
 ## Code in this repo
 
