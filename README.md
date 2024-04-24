@@ -4,7 +4,7 @@ Code associated with the analysis of the manuscript Zhang et al (2024).
 
 ## Data availability
 
-GEO
+- [GEO superseries]:(https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE264172)
 
 ## Data processing
 
