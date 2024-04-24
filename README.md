@@ -8,7 +8,7 @@ Code associated with the analysis of the manuscript Zhang et al (2024).
 
 ## Data processing
 
-### 1. ATACseq processing 
+### 1. ATAC-seq processing 
 Using [nf-core/atacseq](https://nf-co.re/atacseq)
 ```
 nextflow run nf-core/atacseq \
@@ -19,7 +19,7 @@ nextflow run nf-core/atacseq \
         -r 1.2.1
 ```
 
-### 2. RNAseq processing
+### 2. RNA-seq processing
 Using [nf-core/rnaseq](https://nf-co.re/rnaseq)
 ```
 nextflow run nf-core/rnaseq \
@@ -30,6 +30,22 @@ nextflow run nf-core/rnaseq \
         --skip_biotype_qc \
     	--deseq2_vst \
         -r 3.5
+```
+
+### 3. Footprinting
+Using [TOBIAS nextflow pipeline](https://github.com/luslab/briscoe-nf-tobias)
+```
+nextflow run luslab/briscoe-nf-tobias \
+  -r master \
+  --skip_bam_index true \
+  --design design.csv \
+  --genome genome.fa \
+  --regions results/bwa/mergedLibrary/macs/broadPeak/consensus/consensus_peaks.mLb.clN.bed \
+  --peaks results/bwa/mergedLibrary/macs/broadPeak/consensus/consensus_peaks.mLb.clN.bed \
+  --blacklist ~/.nextflow/assets/nf-core/atacseq/assets/blacklists/mm10-blacklist.bed \
+  --motifs motifs_archetypes.meme \
+  --bd_hmem true \
+  --bd_cpus 64 \
 ```
 
 ## Code in this repo
