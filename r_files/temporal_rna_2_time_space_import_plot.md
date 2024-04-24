@@ -1,88 +1,80 @@
----
-title: "RNA_2_time_vs_domain_import"
-output: github_document
----
-
-```{r setup, include=FALSE}
-
-knitr::opts_chunk$set(echo = TRUE)
-
-```
+RNA_2_time_vs_domain_import
+================
 
 # RNA analysis
 
-Start the analysis from the exported tables 
+Start the analysis from the exported tables
 
-```{r message=FALSE}
-
+``` r
 rm(list=ls())
 
 library(RColorBrewer)
 library(tidyverse)
+```
+
+    ## Warning: package 'tidyr' was built under R version 4.2.3
+
+    ## Warning: package 'readr' was built under R version 4.2.3
+
+    ## Warning: package 'dplyr' was built under R version 4.2.3
+
+    ## Warning: package 'stringr' was built under R version 4.2.3
+
+``` r
 library(ComplexHeatmap)
 library(UpSetR)
 
 library(clusterProfiler)
 organism="org.Mm.eg.db"
 library(organism, character.only = TRUE)
-
 ```
 
 ### Load settings
 
-Colors, main directory 
+Colors, main directory
 
-```{r}
-
+``` r
 source('./r_inputs/TemporalSpatialNeuralTube_settings.R')
-
 ```
 
-
 ### Set dirs
-```{r}
 
+``` r
 subworkinput="outputs_glialrna_2_time_space/"
 
 suboutdir1="output_Domain_Specific/"
 suboutdir2="output_Time_Specific/"
-
-
 ```
-
-
 
 ## Load data
 
-Load the diff expression from previous script. 
-
+Load the diff expression from previous script.
 
 ## Load vsd to plot heatmaps later
-```{r load-vsd}
 
+``` r
 count_vsd <- read.csv(file=paste0(workingdir,"outputs_glialRNA_1/","featurecounts.vsd.csv"),header=TRUE, stringsAsFactors = FALSE)
-
 ```
-
 
 ## Differential analysis between domains for each timepoint
 
 Targeted diff analysis in subsets of samples:
 
-Wild type only:
-D5: pairwise for p1, p2, pMN
-D7: pairwise for p1, p2, pMN
-D9: pairwise for p1, p2, pMN
-D11: pairwise for p1, p2, pMN
+Wild type only: D5: pairwise for p1, p2, pMN D7: pairwise for p1, p2,
+pMN D9: pairwise for p1, p2, pMN D11: pairwise for p1, p2, pMN
 
-Warning in DESeqDataSet(se, design = design, ignoreRank) : some variables in design formula are characters, converting to factors
-## It is an expected warning because the R script change the type of the data from vectors to factors.
+Warning in DESeqDataSet(se, design = design, ignoreRank) : some
+variables in design formula are characters, converting to factors \## It
+is an expected warning because the R script change the type of the data
+from vectors to factors.
 
-re importing does not work because the ~/ gets converted to full name of the dir
+re importing does not work because the ~/ gets converted to full name of
+the dir
 
-Change working dir to local and it'll be fine. For not, this is the patch. 
-```{r  import-domain}
+Change working dir to local and it’ll be fine. For not, this is the
+patch.
 
+``` r
 PairWiseDEseq_domain <- lapply(list.files(path=paste0(workingdir,subworkinput,suboutdir1),pattern="Results_DESeq*", full.names=TRUE),function(x) {
   data <- read.table(x,header=T,stringsAsFactors=F) %>% as.data.frame() %>% rownames_to_column("GeneID")
   data$Comparison <- gsub(paste0(workingdir,subworkinput,suboutdir1,"/Results_DESeq_"),"", x)
@@ -91,19 +83,17 @@ PairWiseDEseq_domain <- lapply(list.files(path=paste0(workingdir,subworkinput,su
 })
 
 results_deseq_domain <- do.call(rbind,PairWiseDEseq_domain)
-
 ```
+
 ## Differential analysis between timepoints for each domain
 
 Targeted diff analysis in subsets of samples:
 
-Wild type only:
-p1: pairwise D5-D7, D7-D9, D9-D11, D5-D9, D5-D11, D7-D11
-p2: pairwise D5-D7, D7-D9, D9-D11, D5-D9, D5-D11, D7-D11
-pM: pairwise D5-D7, D7-D9, D9-D11, D5-D9, D5-D11, D7-D11
+Wild type only: p1: pairwise D5-D7, D7-D9, D9-D11, D5-D9, D5-D11, D7-D11
+p2: pairwise D5-D7, D7-D9, D9-D11, D5-D9, D5-D11, D7-D11 pM: pairwise
+D5-D7, D7-D9, D9-D11, D5-D9, D5-D11, D7-D11
 
-```{r}
-
+``` r
 PairWiseDEseq_days <- lapply(list.files(path=paste0(workingdir,subworkinput,suboutdir2),pattern="Results_DESeq*", full.names=TRUE),function(x) {
   data <- read.table(x,header=T,stringsAsFactors=F) %>% as.data.frame() %>% rownames_to_column("GeneID")
   data$Comparison <- gsub(paste0(workingdir,subworkinput,suboutdir2,"/Results_DESeq_"),"", x)
@@ -112,60 +102,43 @@ PairWiseDEseq_days <- lapply(list.files(path=paste0(workingdir,subworkinput,subo
 })
 
 results_deseq_days <- do.call(rbind,PairWiseDEseq_days)
-
 ```
-
 
 ### Thresholds for both time and space comparisons
 
-Based on exploring the data, we have chosen:  
+Based on exploring the data, we have chosen:
 
 `filter(padj < 0.05 & abs(log2FoldChange) > 1 & baseMean > 80)`
 
-
-
-```{r thresholds}
-
+``` r
 adjusted_pval = 0.05
 
 log2FC = 1
 
 minBaseMean = 80
-
-
 ```
-
 
 ### How many diff genes genes between domains?
 
-```{r filter-gates}
-
+``` r
 top_domain_comparisons <- results_deseq_domain %>%
   as.data.frame() %>%
   filter(padj < adjusted_pval & abs(log2FoldChange) > log2FC & baseMean > minBaseMean)
-
- 
-
 ```
-
 
 ### Explore genes by timepoint
 
 ### How many diff genes genes between timepoints?
 
-```{r filter-days}
-
+``` r
 top_days_comparisons <- results_deseq_days %>%
   as.data.frame() %>%
   filter(padj < adjusted_pval & abs(log2FoldChange) > log2FC & baseMean > minBaseMean)
-
-
 ```
-
 
 ### Plot number of genes changing in time and space
 
-```{r, fig.width=8, fig.height=2.5}
+``` r
 # head(top_days_comparisons)
 # head(top_domain_comparisons)
 
@@ -183,18 +156,20 @@ ggplot(top_combined_comparisons, aes(x=dim1, y=dim2)) +
   scale_size(range = c(1,9), breaks = seq(0,10000, by=1000)) + 
   facet_grid(dimension ~ faceting, scales = "free") +
   theme_bw()
-
 ```
 
-#### Domain genes 
+![](temporal_rna_2_time_space_import_plot_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
-Make a table with the counts. Select genes that either 
+#### Domain genes
 
-- differentially expressed in a specific comparison (pMN vs p2) at more than one timepoint (that was 128 genes), or
-- differentially expressed in multiple comparisons (pMN vs p2 AND pMN vs p1) even if just one timepoint
+Make a table with the counts. Select genes that either
 
-```{r}
+- differentially expressed in a specific comparison (pMN vs p2) at more
+  than one timepoint (that was 128 genes), or
+- differentially expressed in multiple comparisons (pMN vs p2 AND pMN vs
+  p1) even if just one timepoint
 
+``` r
 top_combined_comparisons_count <- top_combined_comparisons %>%
   filter(dimension=="Gate") %>%
   mutate(pairwise_comparison=paste(dim1,vs,dim2)) %>% 
@@ -207,25 +182,21 @@ top_domain_2ormorecomparisons <- top_combined_comparisons_count %>%
   filter(count_comparisons > 1 | count_dim1 >1)
   
 length(top_domain_2ormorecomparisons$GeneID %>% unique())
-
 ```
 
+    ## [1] 336
 
 Export this list:
 
-```{r}
-
+``` r
 write.csv(top_domain_2ormorecomparisons,
           paste0(workingdir,subworkinput,"Genes_domains_two-or-more_comparisons.csv"),
           quote = FALSE)
-
-
 ```
 
 #### Temporal genes: high confidence ALL domain genes
 
-```{r}
-
+``` r
 top_temporal_comparisons_count <- top_combined_comparisons %>%
   filter(dimension=="Day") %>%
   mutate(pairwise_comparison=paste(dim1,vs,dim2)) %>% 
@@ -242,27 +213,21 @@ top_temporal_2ormorecomparisons <- top_temporal_comparisons_count %>%
 #  filter(count_comparisons > 2 | count_dim1 >1)
   
 length(top_temporal_2ormorecomparisons$GeneID %>% unique())
-
-
 ```
 
+    ## [1] 547
 
 Export this list:
 
-```{r}
-
+``` r
 write.csv(top_temporal_2ormorecomparisons,
           paste0(workingdir,subworkinput,"Genes_temporal_alldomains.csv"),
           quote = FALSE)
-
-
 ```
 
-### Plot the temporal all domain genes 
+### Plot the temporal all domain genes
 
-
-```{r plot-vsd-ALLdifftime}
-
+``` r
 gene_subset <- top_temporal_2ormorecomparisons$GeneID %>% unique()
 
 
@@ -279,9 +244,18 @@ vsd_hm_ave <- count_vsd %>%
   dplyr::select(X, condition,avecount) %>%
   pivot_wider(names_from = condition, values_from = avecount) %>%
   column_to_rownames("X")
-  
-dim(vsd_hm_ave)
+```
 
+    ## `summarise()` has grouped output by 'X', 'Genotype', 'Day'. You can override
+    ## using the `.groups` argument.
+
+``` r
+dim(vsd_hm_ave)
+```
+
+    ## [1] 547  12
+
+``` r
 # z score
 vsd_hm_z <- t(scale(t(vsd_hm_ave))) 
 
@@ -364,22 +338,18 @@ hmap <- Heatmap(vsd_hm_z,
 
     # specify top and bottom annotations
       top_annotation = colAnn)
-
-
 ```
 
-
-```{r fig.height=6, fig.width=5}
-
+``` r
 hmap <- draw(hmap,
     heatmap_legend_side = 'left',
     annotation_legend_side = 'left',
     row_sub_title_side = 'left')
-
 ```
 
+![](temporal_rna_2_time_space_import_plot_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
-```{r}
+``` r
 # print heatmap
 pdf(paste0(workingdir,subworkinput,"Heatmap_TempoRNA_clusters.pdf"), width = 5, height = 6) 
 
@@ -391,14 +361,35 @@ draw(hmap,
 dev.off()
 ```
 
+    ## quartz_off_screen 
+    ##                 2
 
-```{r}
-
+``` r
 r.dend <- row_dend(hmap)  #Extract row dendrogram
 rcl.list <- row_order(hmap)  #Extract clusters (output is a list)
 
 lapply(rcl.list, function(x) length(x))  #check/confirm size clusters
+```
 
+    ## $`5`
+    ## [1] 30
+    ## 
+    ## $`6`
+    ## [1] 195
+    ## 
+    ## $`4`
+    ## [1] 109
+    ## 
+    ## $`3`
+    ## [1] 159
+    ## 
+    ## $`2`
+    ## [1] 22
+    ## 
+    ## $`1`
+    ## [1] 32
+
+``` r
 # loop to extract genes for each cluster.
 for (i in 1:length(row_order(hmap))){
  if (i == 1) {
@@ -415,19 +406,21 @@ for (i in 1:length(row_order(hmap))){
 
 write.csv(out, file =paste0(workingdir,subworkinput,"TemporalALLgenes_clustered.csv"),
           quote = FALSE )
-
 ```
-
 
 ### GO enrichment attempts
 
-```{r message=FALSE}
-
+``` r
 keytypes(org.Mm.eg.db)
 ```
 
-```{r}
+    ##  [1] "ACCNUM"       "ALIAS"        "ENSEMBL"      "ENSEMBLPROT"  "ENSEMBLTRANS"
+    ##  [6] "ENTREZID"     "ENZYME"       "EVIDENCE"     "EVIDENCEALL"  "GENENAME"    
+    ## [11] "GENETYPE"     "GO"           "GOALL"        "IPI"          "MGI"         
+    ## [16] "ONTOLOGY"     "ONTOLOGYALL"  "PATH"         "PFAM"         "PMID"        
+    ## [21] "PROSITE"      "REFSEQ"       "SYMBOL"       "UNIPROT"
 
+``` r
 clusterlist <- out[,2] %>% unique() %>% as.list()
 
 go_enrichment_allcluster <- lapply(clusterlist, function(x){
@@ -453,7 +446,24 @@ go_enrichment_allcluster <- lapply(clusterlist, function(x){
   go_results$cluster <- df$Cluster %>% unique()
   go_results
 })
+```
 
+    ## 'select()' returned 1:1 mapping between keys and columns
+
+    ## 'select()' returned 1:many mapping between keys and columns
+    ## 'select()' returned 1:many mapping between keys and columns
+    ## 'select()' returned 1:many mapping between keys and columns
+
+    ## Warning in bitr(df$GeneID, fromType = "ALIAS", toType = c("SYMBOL",
+    ## "ENTREZID"), : 1.26% of input gene IDs are fail to map...
+
+    ## 'select()' returned 1:many mapping between keys and columns
+    ## 'select()' returned 1:many mapping between keys and columns
+
+    ## Warning in bitr(df$GeneID, fromType = "ALIAS", toType = c("SYMBOL",
+    ## "ENTREZID"), : 3.12% of input gene IDs are fail to map...
+
+``` r
 go_enrichment_df <- do.call(rbind, go_enrichment_allcluster)
 
 # This is for one by one
@@ -478,14 +488,11 @@ go_enrichment_df <- do.call(rbind, go_enrichment_allcluster)
 # 
 # #goplot(ego2)
 # dotplot(ego2)
-
 ```
 
+plot
 
-plot 
-
-```{r fig.width=8, fig.height=10}
-
+``` r
 #GeneRatio to actually be a ratio
 go_enrichment_df$GeneRatio <- sapply(strsplit(go_enrichment_df$GeneRatio, "/"), function(x) as.numeric(x[1])/as.numeric(x[2]))
 
@@ -494,12 +501,9 @@ go_enrichment_plot <- go_enrichment_df %>%
   group_by(cluster,ONTOLOGY) %>%
   slice_min(p.adjust,n=10) %>%
   mutate(cluster=factor(cluster, level=c("cluster5","cluster6","cluster4","cluster3","cluster2","cluster1")))
-
 ```
 
-
-```{r fig.width=6, fig.height=5}
-
+``` r
 plot_go <- ggplot(go_enrichment_plot %>% filter(ONTOLOGY=="BP") %>% 
                  group_by(cluster,ONTOLOGY) %>%  
                  slice_min(p.adjust,n=2) %>% # smallest p.adj
@@ -515,11 +519,76 @@ ggsave(paste0(workingdir,subworkinput,"BubblePlot_GOenrich.pdf"), plot=plot_go,
              width=6, height=5, units="in", useDingbats=FALSE)
 
 plot_go
-
 ```
 
+![](temporal_rna_2_time_space_import_plot_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
 
-
-```{r}
+``` r
 sessionInfo()
 ```
+
+    ## R version 4.2.2 (2022-10-31)
+    ## Platform: aarch64-apple-darwin20 (64-bit)
+    ## Running under: macOS 14.4.1
+    ## 
+    ## Matrix products: default
+    ## BLAS:   /Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/lib/libRblas.0.dylib
+    ## LAPACK: /Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/lib/libRlapack.dylib
+    ## 
+    ## locale:
+    ## [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+    ## 
+    ## attached base packages:
+    ## [1] stats4    grid      stats     graphics  grDevices utils     datasets 
+    ## [8] methods   base     
+    ## 
+    ## other attached packages:
+    ##  [1] org.Mm.eg.db_3.16.0   AnnotationDbi_1.60.2  IRanges_2.32.0       
+    ##  [4] S4Vectors_0.36.2      Biobase_2.58.0        BiocGenerics_0.44.0  
+    ##  [7] clusterProfiler_4.6.2 UpSetR_1.4.0          ComplexHeatmap_2.15.4
+    ## [10] lubridate_1.9.3       forcats_1.0.0         stringr_1.5.1        
+    ## [13] dplyr_1.1.4           purrr_1.0.2           readr_2.1.5          
+    ## [16] tidyr_1.3.1           tibble_3.2.1          ggplot2_3.5.1        
+    ## [19] tidyverse_2.0.0       RColorBrewer_1.1-3   
+    ## 
+    ## loaded via a namespace (and not attached):
+    ##   [1] shadowtext_0.1.3       circlize_0.4.16        fastmatch_1.1-4       
+    ##   [4] systemfonts_1.0.6      plyr_1.8.9             igraph_2.0.3          
+    ##   [7] lazyeval_0.2.2         splines_4.2.2          BiocParallel_1.32.6   
+    ##  [10] GenomeInfoDb_1.34.9    digest_0.6.35          foreach_1.5.2         
+    ##  [13] yulab.utils_0.1.4      htmltools_0.5.8.1      GOSemSim_2.24.0       
+    ##  [16] viridis_0.6.5          magick_2.8.3           GO.db_3.16.0          
+    ##  [19] fansi_1.0.6            magrittr_2.0.3         memoise_2.0.1         
+    ##  [22] cluster_2.1.6          doParallel_1.0.17      tzdb_0.4.0            
+    ##  [25] Biostrings_2.66.0      graphlayouts_1.1.1     matrixStats_1.3.0     
+    ##  [28] timechange_0.3.0       enrichplot_1.18.4      colorspace_2.1-0      
+    ##  [31] blob_1.2.4             ggrepel_0.9.5          textshaping_0.3.7     
+    ##  [34] xfun_0.43              crayon_1.5.2           RCurl_1.98-1.14       
+    ##  [37] jsonlite_1.8.8         scatterpie_0.2.2       iterators_1.0.14      
+    ##  [40] ape_5.8                glue_1.7.0             polyclip_1.10-6       
+    ##  [43] gtable_0.3.5           zlibbioc_1.44.0        XVector_0.38.0        
+    ##  [46] GetoptLong_1.0.5       shape_1.4.6.1          scales_1.3.0          
+    ##  [49] DOSE_3.24.2            DBI_1.2.2              Rcpp_1.0.12           
+    ##  [52] viridisLite_0.4.2      clue_0.3-65            gridGraphics_0.5-1    
+    ##  [55] tidytree_0.4.6         bit_4.0.5              httr_1.4.7            
+    ##  [58] fgsea_1.24.0           pkgconfig_2.0.3        farver_2.1.1          
+    ##  [61] utf8_1.2.4             labeling_0.4.3         ggplotify_0.1.2       
+    ##  [64] tidyselect_1.2.1       rlang_1.1.3            reshape2_1.4.4        
+    ##  [67] munsell_0.5.1          tools_4.2.2            cachem_1.0.8          
+    ##  [70] downloader_0.4         cli_3.6.2              generics_0.1.3        
+    ##  [73] RSQLite_2.3.6          gson_0.1.0             evaluate_0.23         
+    ##  [76] fastmap_1.1.1          yaml_2.3.8             ragg_1.3.0            
+    ##  [79] ggtree_3.6.2           knitr_1.46             bit64_4.0.5           
+    ##  [82] fs_1.6.3               tidygraph_1.3.1        KEGGREST_1.38.0       
+    ##  [85] ggraph_2.2.1           nlme_3.1-164           aplot_0.2.2           
+    ##  [88] compiler_4.2.2         rstudioapi_0.16.0      png_0.1-8             
+    ##  [91] treeio_1.22.0          tweenr_2.0.3           stringi_1.8.3         
+    ##  [94] highr_0.10             lattice_0.22-6         Matrix_1.6-5          
+    ##  [97] vctrs_0.6.5            pillar_1.9.0           lifecycle_1.0.4       
+    ## [100] GlobalOptions_0.1.2    data.table_1.15.4      cowplot_1.1.3         
+    ## [103] bitops_1.0-7           patchwork_1.2.0        qvalue_2.30.0         
+    ## [106] R6_2.5.1               gridExtra_2.3          codetools_0.2-20      
+    ## [109] MASS_7.3-60.0.1        rjson_0.2.21           withr_3.0.0           
+    ## [112] GenomeInfoDbData_1.2.9 parallel_4.2.2         hms_1.1.3             
+    ## [115] ggfun_0.1.4            HDO.db_0.99.1          rmarkdown_2.26        
+    ## [118] Cairo_1.6-2            ggforce_0.4.2
