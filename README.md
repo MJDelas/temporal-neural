@@ -14,9 +14,13 @@ GEO
 
 ## Code in this repo
 
-- [Fig 1 ATAC PCA](r_files/temporal_atac_1_PCA.md): ATAC PCA for all cell types across time.
-- [ATAC diff accessibility](r_files/temporal_atac_2_time_space.md)
-- [Fig 1 ATAC space vs time quantifications, temporal heatmap](r_files/temporal_atac_2_time_space_plot.md)
+- [ATAC 1](r_files/temporal_atac_1_PCA.md): 
+    - Fig 1 ATAC PCA for all cell types across time.
+- [ATAC 2](r_files/temporal_atac_2_time_space.md): 
+    - Calculate ATAC diff accessibility for all pairwise comparisons
+- [ATAC 3](r_files/temporal_atac_2_time_space_plot.md): 
+    - Fig 1 ATAC space vs time quantifications
+    - Fig 1 temporal heatmap
 
 - [Fig 2 footprints and TF expression]
 - [Fig 2 screen results]
