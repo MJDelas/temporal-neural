@@ -180,7 +180,7 @@ draw(hmap_catsATAC,
     row_sub_title_side = 'left')
 ```
 
-![](tempral_Nr6a1OE_3_ATAC_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+![](temporal_Nr6a1OE_3_ATAC_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
 ``` r
 # print heatmap
