@@ -72,5 +72,9 @@ nextflow run luslab/briscoe-nf-tobias \
 - [Mutant RNAseq](r_files/temporal_screen_2_hitsRNAseq.md)
     - Fig 2 and S2 Polycomb and Brd8 mutants: temporal and spatial patterning defects
     - Fig 3 and S3 Nr6a1 mutant: temporal defects
-- [Fig 3 Nr6a1 overexpression ATACseq]
+- [Nr6a1 OE ATAC 1](r_files/temporal_Nr6a1OE_2_ATAC.md)
+    - Fig 3 Accessibility changes upon Nr6a1 overexpression
+- [Nr6a1 OE ATAC 2](r_files/temporal_Nr6a1OE_3_ATAC.md)
+    - Fig 3 Accessibility in wild type CaTS-ATAC for elements changing in Nr6a1 overexpression
 - [tempo and space integration]
+- [NFIA/B KO]

@@ -37,6 +37,8 @@ colorgates <- c("#55bee8","#e6c444","#e64466")
 color_screen <- c("#e2e2e2","#a5143b","#00b184","#FF8370")
 color_circlesscreen <- c("#a7a7a7","black","black","black")
 
+Nr6a1colors <- c("#a7a7a7","#9f0000")
+
 shapes4_manual = c(18,15,16,17) # these are block
 shapes5_manual = c(25,21,22,23,24) # these are filled
 shapes4_fill_manual = c(23,21,22,24)
