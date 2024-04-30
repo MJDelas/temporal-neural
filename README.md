@@ -1,6 +1,6 @@
 # The cis-regulatory logic integrating spatial and temporal patterning in the vertebrate neural tube
 
-Code associated with the analysis of the manuscript Zhang et al (2024).
+Code associated with the analysis of the manuscript [Zhang et al (2024)](https://www.biorxiv.org/content/10.1101/2024.04.17.589864v1.full).
 
 ## Data availability
 
