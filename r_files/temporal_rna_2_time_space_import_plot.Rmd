@@ -456,28 +456,6 @@ go_enrichment_allcluster <- lapply(clusterlist, function(x){
 
 go_enrichment_df <- do.call(rbind, go_enrichment_allcluster)
 
-# This is for one by one
-# df = as.data.frame(out) %>% filter(Cluster=="cluster3")
-# 
-# #gene_list = df$GeneID
-# 
-# # is it SYMBOL? yes, but sometimes there are some missing clean up - ALIAS works best at finding them
-# gene_list <- bitr(df$GeneID, fromType = "ALIAS",
-#                 toType = c("SYMBOL", "ENTREZID"),
-#                 OrgDb = organism)
-# 
-# ego2 <- enrichGO(gene         = gene_list$SYMBOL,
-#                 OrgDb         = organism,
-#                 keyType       = 'SYMBOL',
-#                 ont           = "ALL",pool=TRUE,
-#                 pAdjustMethod = "fdr",
-#                 pvalueCutoff  = 0.05, # these are the defaults
-#                 qvalueCutoff  = 0.2)
-# 
-# head(ego2, 10)
-# 
-# #goplot(ego2)
-# dotplot(ego2)
 
 ```
 
@@ -498,7 +476,7 @@ go_enrichment_plot <- go_enrichment_df %>%
 ```
 
 
-```{r fig.width=6, fig.height=5}
+```{r fig.width=8, fig.height=5}
 
 plot_go <- ggplot(go_enrichment_plot %>% filter(ONTOLOGY=="BP") %>% 
                  group_by(cluster,ONTOLOGY) %>%  

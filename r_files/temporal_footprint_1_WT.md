@@ -11,27 +11,9 @@ library(ComplexHeatmap)
 library(readxl)
 library(broom)
 library(ggrepel)
-```
-
-    ## Warning: package 'ggrepel' was built under R version 4.2.3
-
-``` r
 library(patchwork)
-```
-
-    ## Warning: package 'patchwork' was built under R version 4.2.3
-
-``` r
 library(tidyverse)
 ```
-
-    ## Warning: package 'tidyr' was built under R version 4.2.3
-
-    ## Warning: package 'readr' was built under R version 4.2.3
-
-    ## Warning: package 'dplyr' was built under R version 4.2.3
-
-    ## Warning: package 'stringr' was built under R version 4.2.3
 
 ### Load settings
 
@@ -49,21 +31,21 @@ subworkinput="inputs_glialfootprint_1/"
 ifelse(!dir.exists(file.path(workingdir,outdir)), dir.create(file.path(workingdir,outdir)), "Directory exists")
 ```
 
-    ## [1] "Directory exists"
+    ## [1] TRUE
 
 ``` r
 suboutdir1="Plots_Archetypes_RNA/"
 ifelse(!dir.exists(file.path(workingdir,outdir,suboutdir1)), dir.create(file.path(workingdir,outdir,suboutdir1)), "Directory exists")
 ```
 
-    ## [1] "Directory exists"
+    ## [1] TRUE
 
 ``` r
 suboutdir2="Plots_scores_Arch/"
 ifelse(!dir.exists(file.path(workingdir,outdir,suboutdir2)), dir.create(file.path(workingdir,outdir,suboutdir2)), "Directory exists")
 ```
 
-    ## [1] "Directory exists"
+    ## [1] TRUE
 
 ### Import data
 
@@ -727,16 +709,19 @@ ggsave(paste0(workingdir,outdir, "Panel_SOX_genes",x,".pdf"),
 sessionInfo()
 ```
 
-    ## R version 4.2.2 (2022-10-31)
-    ## Platform: aarch64-apple-darwin20 (64-bit)
-    ## Running under: macOS 14.4.1
+    ## R version 4.4.0 (2024-04-24)
+    ## Platform: aarch64-apple-darwin20
+    ## Running under: macOS Sonoma 14.4.1
     ## 
     ## Matrix products: default
-    ## BLAS:   /Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/lib/libRblas.0.dylib
-    ## LAPACK: /Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/lib/libRlapack.dylib
+    ## BLAS:   /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRblas.0.dylib 
+    ## LAPACK: /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.12.0
     ## 
     ## locale:
     ## [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+    ## 
+    ## time zone: Europe/London
+    ## tzcode source: internal
     ## 
     ## attached base packages:
     ## [1] grid      stats     graphics  grDevices utils     datasets  methods  
@@ -747,30 +732,29 @@ sessionInfo()
     ##  [4] dplyr_1.1.4           purrr_1.0.2           readr_2.1.5          
     ##  [7] tidyr_1.3.1           tibble_3.2.1          tidyverse_2.0.0      
     ## [10] patchwork_1.2.0       ggrepel_0.9.5         ggplot2_3.5.1        
-    ## [13] broom_1.0.5           readxl_1.4.3          ComplexHeatmap_2.15.4
+    ## [13] broom_1.0.5           readxl_1.4.3          ComplexHeatmap_2.19.0
     ## [16] RColorBrewer_1.1-3   
     ## 
     ## loaded via a namespace (and not attached):
-    ##  [1] splines_4.2.2       foreach_1.5.2       highr_0.10         
-    ##  [4] stats4_4.2.2        cellranger_1.1.0    yaml_2.3.8         
-    ##  [7] pillar_1.9.0        backports_1.4.1     lattice_0.22-6     
-    ## [10] glue_1.7.0          digest_0.6.35       colorspace_2.1-0   
-    ## [13] htmltools_0.5.8.1   Matrix_1.6-5        pkgconfig_2.0.3    
-    ## [16] GetoptLong_1.0.5    magick_2.8.3        scales_1.3.0       
-    ## [19] tzdb_0.4.0          timechange_0.3.0    mgcv_1.9-1         
-    ## [22] generics_0.1.3      farver_2.1.1        IRanges_2.32.0     
-    ## [25] withr_3.0.0         BiocGenerics_0.44.0 cli_3.6.2          
-    ## [28] magrittr_2.0.3      crayon_1.5.2        evaluate_0.23      
-    ## [31] fansi_1.0.6         doParallel_1.0.17   nlme_3.1-164       
-    ## [34] textshaping_0.3.7   Cairo_1.6-2         tools_4.2.2        
-    ## [37] hms_1.1.3           GlobalOptions_0.1.2 lifecycle_1.0.4    
-    ## [40] matrixStats_1.3.0   S4Vectors_0.36.2    munsell_0.5.1      
-    ## [43] cluster_2.1.6       compiler_4.2.2      systemfonts_1.0.6  
-    ## [46] rlang_1.1.3         iterators_1.0.14    rstudioapi_0.16.0  
-    ## [49] rjson_0.2.21        circlize_0.4.16     labeling_0.4.3     
-    ## [52] rmarkdown_2.26      gtable_0.3.5        codetools_0.2-20   
-    ## [55] R6_2.5.1            knitr_1.46          fastmap_1.1.1      
-    ## [58] utf8_1.2.4          clue_0.3-65         ragg_1.3.0         
-    ## [61] shape_1.4.6.1       stringi_1.8.3       parallel_4.2.2     
-    ## [64] Rcpp_1.0.12         vctrs_0.6.5         png_0.1-8          
-    ## [67] tidyselect_1.2.1    xfun_0.43
+    ##  [1] gtable_0.3.5        circlize_0.4.16     shape_1.4.6.1      
+    ##  [4] rjson_0.2.21        xfun_0.43           GlobalOptions_0.1.2
+    ##  [7] lattice_0.22-6      tzdb_0.4.0          vctrs_0.6.5        
+    ## [10] tools_4.4.0         generics_0.1.3      stats4_4.4.0       
+    ## [13] parallel_4.4.0      fansi_1.0.6         highr_0.10         
+    ## [16] cluster_2.1.6       pkgconfig_2.0.3     Matrix_1.7-0       
+    ## [19] S4Vectors_0.41.7    lifecycle_1.0.4     farver_2.1.1       
+    ## [22] compiler_4.4.0      textshaping_0.3.7   munsell_0.5.1      
+    ## [25] codetools_0.2-20    clue_0.3-65         htmltools_0.5.8.1  
+    ## [28] yaml_2.3.8          pillar_1.9.0        crayon_1.5.2       
+    ## [31] iterators_1.0.14    foreach_1.5.2       nlme_3.1-164       
+    ## [34] tidyselect_1.2.1    digest_0.6.35       stringi_1.8.3      
+    ## [37] labeling_0.4.3      splines_4.4.0       fastmap_1.1.1      
+    ## [40] colorspace_2.1-0    cli_3.6.2           magrittr_2.0.3     
+    ## [43] utf8_1.2.4          withr_3.0.0         scales_1.3.0       
+    ## [46] backports_1.4.1     timechange_0.3.0    rmarkdown_2.26     
+    ## [49] matrixStats_1.3.0   cellranger_1.1.0    ragg_1.3.0         
+    ## [52] png_0.1-8           GetoptLong_1.0.5    hms_1.1.3          
+    ## [55] evaluate_0.23       knitr_1.46          IRanges_2.37.1     
+    ## [58] doParallel_1.0.17   mgcv_1.9-1          rlang_1.1.3        
+    ## [61] Rcpp_1.0.12         glue_1.7.0          BiocGenerics_0.49.1
+    ## [64] rstudioapi_0.16.0   R6_2.5.1            systemfonts_1.0.6

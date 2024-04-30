@@ -10,17 +10,6 @@ rm(list=ls())
 
 library(RColorBrewer)
 library(tidyverse)
-```
-
-    ## Warning: package 'tidyr' was built under R version 4.2.3
-
-    ## Warning: package 'readr' was built under R version 4.2.3
-
-    ## Warning: package 'dplyr' was built under R version 4.2.3
-
-    ## Warning: package 'stringr' was built under R version 4.2.3
-
-``` r
 library(ComplexHeatmap)
 library(UpSetR)
 
@@ -340,6 +329,10 @@ hmap <- Heatmap(vsd_hm_z,
       top_annotation = colAnn)
 ```
 
+    ## 'magick' package is suggested to install to give better rasterization.
+    ## 
+    ## Set `ht_opt$message = FALSE` to turn off this message.
+
 ``` r
 hmap <- draw(hmap,
     heatmap_legend_side = 'left',
@@ -371,23 +364,23 @@ rcl.list <- row_order(hmap)  #Extract clusters (output is a list)
 lapply(rcl.list, function(x) length(x))  #check/confirm size clusters
 ```
 
-    ## $`5`
-    ## [1] 30
-    ## 
-    ## $`6`
-    ## [1] 195
-    ## 
     ## $`4`
     ## [1] 109
     ## 
     ## $`3`
     ## [1] 159
     ## 
-    ## $`2`
+    ## $`1`
     ## [1] 22
     ## 
-    ## $`1`
+    ## $`2`
     ## [1] 32
+    ## 
+    ## $`5`
+    ## [1] 30
+    ## 
+    ## $`6`
+    ## [1] 195
 
 ``` r
 # loop to extract genes for each cluster.
@@ -448,9 +441,6 @@ go_enrichment_allcluster <- lapply(clusterlist, function(x){
 })
 ```
 
-    ## 'select()' returned 1:1 mapping between keys and columns
-
-    ## 'select()' returned 1:many mapping between keys and columns
     ## 'select()' returned 1:many mapping between keys and columns
     ## 'select()' returned 1:many mapping between keys and columns
 
@@ -463,31 +453,14 @@ go_enrichment_allcluster <- lapply(clusterlist, function(x){
     ## Warning in bitr(df$GeneID, fromType = "ALIAS", toType = c("SYMBOL",
     ## "ENTREZID"), : 3.12% of input gene IDs are fail to map...
 
+    ## 'select()' returned 1:1 mapping between keys and columns
+    ## 'select()' returned 1:many mapping between keys and columns
+
+    ## Warning in bitr(df$GeneID, fromType = "ALIAS", toType = c("SYMBOL",
+    ## "ENTREZID"), : 0.51% of input gene IDs are fail to map...
+
 ``` r
 go_enrichment_df <- do.call(rbind, go_enrichment_allcluster)
-
-# This is for one by one
-# df = as.data.frame(out) %>% filter(Cluster=="cluster3")
-# 
-# #gene_list = df$GeneID
-# 
-# # is it SYMBOL? yes, but sometimes there are some missing clean up - ALIAS works best at finding them
-# gene_list <- bitr(df$GeneID, fromType = "ALIAS",
-#                 toType = c("SYMBOL", "ENTREZID"),
-#                 OrgDb = organism)
-# 
-# ego2 <- enrichGO(gene         = gene_list$SYMBOL,
-#                 OrgDb         = organism,
-#                 keyType       = 'SYMBOL',
-#                 ont           = "ALL",pool=TRUE,
-#                 pAdjustMethod = "fdr",
-#                 pvalueCutoff  = 0.05, # these are the defaults
-#                 qvalueCutoff  = 0.2)
-# 
-# head(ego2, 10)
-# 
-# #goplot(ego2)
-# dotplot(ego2)
 ```
 
 plot
@@ -527,68 +500,70 @@ plot_go
 sessionInfo()
 ```
 
-    ## R version 4.2.2 (2022-10-31)
-    ## Platform: aarch64-apple-darwin20 (64-bit)
-    ## Running under: macOS 14.4.1
+    ## R version 4.4.0 (2024-04-24)
+    ## Platform: aarch64-apple-darwin20
+    ## Running under: macOS Sonoma 14.4.1
     ## 
     ## Matrix products: default
-    ## BLAS:   /Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/lib/libRblas.0.dylib
-    ## LAPACK: /Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/lib/libRlapack.dylib
+    ## BLAS:   /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRblas.0.dylib 
+    ## LAPACK: /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.12.0
     ## 
     ## locale:
     ## [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+    ## 
+    ## time zone: Europe/London
+    ## tzcode source: internal
     ## 
     ## attached base packages:
     ## [1] stats4    grid      stats     graphics  grDevices utils     datasets 
     ## [8] methods   base     
     ## 
     ## other attached packages:
-    ##  [1] org.Mm.eg.db_3.16.0   AnnotationDbi_1.60.2  IRanges_2.32.0       
-    ##  [4] S4Vectors_0.36.2      Biobase_2.58.0        BiocGenerics_0.44.0  
-    ##  [7] clusterProfiler_4.6.2 UpSetR_1.4.0          ComplexHeatmap_2.15.4
-    ## [10] lubridate_1.9.3       forcats_1.0.0         stringr_1.5.1        
-    ## [13] dplyr_1.1.4           purrr_1.0.2           readr_2.1.5          
-    ## [16] tidyr_1.3.1           tibble_3.2.1          ggplot2_3.5.1        
-    ## [19] tidyverse_2.0.0       RColorBrewer_1.1-3   
+    ##  [1] org.Mm.eg.db_3.19.1    AnnotationDbi_1.65.2   IRanges_2.37.1        
+    ##  [4] S4Vectors_0.41.7       Biobase_2.63.1         BiocGenerics_0.49.1   
+    ##  [7] clusterProfiler_4.11.1 UpSetR_1.4.0           ComplexHeatmap_2.19.0 
+    ## [10] lubridate_1.9.3        forcats_1.0.0          stringr_1.5.1         
+    ## [13] dplyr_1.1.4            purrr_1.0.2            readr_2.1.5           
+    ## [16] tidyr_1.3.1            tibble_3.2.1           ggplot2_3.5.1         
+    ## [19] tidyverse_2.0.0        RColorBrewer_1.1-3    
     ## 
     ## loaded via a namespace (and not attached):
-    ##   [1] shadowtext_0.1.3       circlize_0.4.16        fastmatch_1.1-4       
-    ##   [4] systemfonts_1.0.6      plyr_1.8.9             igraph_2.0.3          
-    ##   [7] lazyeval_0.2.2         splines_4.2.2          BiocParallel_1.32.6   
-    ##  [10] GenomeInfoDb_1.34.9    digest_0.6.35          foreach_1.5.2         
-    ##  [13] yulab.utils_0.1.4      htmltools_0.5.8.1      GOSemSim_2.24.0       
-    ##  [16] viridis_0.6.5          magick_2.8.3           GO.db_3.16.0          
-    ##  [19] fansi_1.0.6            magrittr_2.0.3         memoise_2.0.1         
-    ##  [22] cluster_2.1.6          doParallel_1.0.17      tzdb_0.4.0            
-    ##  [25] Biostrings_2.66.0      graphlayouts_1.1.1     matrixStats_1.3.0     
-    ##  [28] timechange_0.3.0       enrichplot_1.18.4      colorspace_2.1-0      
-    ##  [31] blob_1.2.4             ggrepel_0.9.5          textshaping_0.3.7     
-    ##  [34] xfun_0.43              crayon_1.5.2           RCurl_1.98-1.14       
-    ##  [37] jsonlite_1.8.8         scatterpie_0.2.2       iterators_1.0.14      
-    ##  [40] ape_5.8                glue_1.7.0             polyclip_1.10-6       
-    ##  [43] gtable_0.3.5           zlibbioc_1.44.0        XVector_0.38.0        
-    ##  [46] GetoptLong_1.0.5       shape_1.4.6.1          scales_1.3.0          
-    ##  [49] DOSE_3.24.2            DBI_1.2.2              Rcpp_1.0.12           
-    ##  [52] viridisLite_0.4.2      clue_0.3-65            gridGraphics_0.5-1    
-    ##  [55] tidytree_0.4.6         bit_4.0.5              httr_1.4.7            
-    ##  [58] fgsea_1.24.0           pkgconfig_2.0.3        farver_2.1.1          
-    ##  [61] utf8_1.2.4             labeling_0.4.3         ggplotify_0.1.2       
-    ##  [64] tidyselect_1.2.1       rlang_1.1.3            reshape2_1.4.4        
-    ##  [67] munsell_0.5.1          tools_4.2.2            cachem_1.0.8          
-    ##  [70] downloader_0.4         cli_3.6.2              generics_0.1.3        
-    ##  [73] RSQLite_2.3.6          gson_0.1.0             evaluate_0.23         
-    ##  [76] fastmap_1.1.1          yaml_2.3.8             ragg_1.3.0            
-    ##  [79] ggtree_3.6.2           knitr_1.46             bit64_4.0.5           
-    ##  [82] fs_1.6.3               tidygraph_1.3.1        KEGGREST_1.38.0       
-    ##  [85] ggraph_2.2.1           nlme_3.1-164           aplot_0.2.2           
-    ##  [88] compiler_4.2.2         rstudioapi_0.16.0      png_0.1-8             
-    ##  [91] treeio_1.22.0          tweenr_2.0.3           stringi_1.8.3         
-    ##  [94] highr_0.10             lattice_0.22-6         Matrix_1.6-5          
-    ##  [97] vctrs_0.6.5            pillar_1.9.0           lifecycle_1.0.4       
-    ## [100] GlobalOptions_0.1.2    data.table_1.15.4      cowplot_1.1.3         
-    ## [103] bitops_1.0-7           patchwork_1.2.0        qvalue_2.30.0         
-    ## [106] R6_2.5.1               gridExtra_2.3          codetools_0.2-20      
-    ## [109] MASS_7.3-60.0.1        rjson_0.2.21           withr_3.0.0           
-    ## [112] GenomeInfoDbData_1.2.9 parallel_4.2.2         hms_1.1.3             
-    ## [115] ggfun_0.1.4            HDO.db_0.99.1          rmarkdown_2.26        
-    ## [118] Cairo_1.6-2            ggforce_0.4.2
+    ##   [1] rstudioapi_0.16.0       jsonlite_1.8.8          shape_1.4.6.1          
+    ##   [4] magrittr_2.0.3          farver_2.1.1            rmarkdown_2.26         
+    ##   [7] ragg_1.3.0              GlobalOptions_0.1.2     fs_1.6.4               
+    ##  [10] zlibbioc_1.49.3         vctrs_0.6.5             memoise_2.0.1          
+    ##  [13] ggtree_3.11.2           htmltools_0.5.8.1       gridGraphics_0.5-1     
+    ##  [16] plyr_1.8.9              cachem_1.0.8            igraph_2.0.3           
+    ##  [19] lifecycle_1.0.4         iterators_1.0.14        pkgconfig_2.0.3        
+    ##  [22] gson_0.1.0              Matrix_1.7-0            R6_2.5.1               
+    ##  [25] fastmap_1.1.1           GenomeInfoDbData_1.2.12 clue_0.3-65            
+    ##  [28] digest_0.6.35           aplot_0.2.2             enrichplot_1.23.2      
+    ##  [31] colorspace_2.1-0        patchwork_1.2.0         textshaping_0.3.7      
+    ##  [34] RSQLite_2.3.6           labeling_0.4.3          fansi_1.0.6            
+    ##  [37] timechange_0.3.0        httr_1.4.7              polyclip_1.10-6        
+    ##  [40] compiler_4.4.0          bit64_4.0.5             withr_3.0.0            
+    ##  [43] doParallel_1.0.17       BiocParallel_1.37.1     viridis_0.6.5          
+    ##  [46] DBI_1.2.2               highr_0.10              ggforce_0.4.2          
+    ##  [49] MASS_7.3-60.2           rjson_0.2.21            HDO.db_0.99.1          
+    ##  [52] tools_4.4.0             ape_5.8                 scatterpie_0.2.2       
+    ##  [55] glue_1.7.0              nlme_3.1-164            GOSemSim_2.29.2        
+    ##  [58] shadowtext_0.1.3        cluster_2.1.6           reshape2_1.4.4         
+    ##  [61] fgsea_1.29.2            generics_0.1.3          gtable_0.3.5           
+    ##  [64] tzdb_0.4.0              data.table_1.15.4       hms_1.1.3              
+    ##  [67] tidygraph_1.3.1         utf8_1.2.4              XVector_0.43.1         
+    ##  [70] ggrepel_0.9.5           foreach_1.5.2           pillar_1.9.0           
+    ##  [73] yulab.utils_0.1.4       circlize_0.4.16         splines_4.4.0          
+    ##  [76] tweenr_2.0.3            treeio_1.27.1           lattice_0.22-6         
+    ##  [79] bit_4.0.5               tidyselect_1.2.1        GO.db_3.19.1           
+    ##  [82] Biostrings_2.71.6       knitr_1.46              gridExtra_2.3          
+    ##  [85] xfun_0.43               graphlayouts_1.1.1      matrixStats_1.3.0      
+    ##  [88] stringi_1.8.3           UCSC.utils_0.99.7       lazyeval_0.2.2         
+    ##  [91] ggfun_0.1.4             yaml_2.3.8              evaluate_0.23          
+    ##  [94] codetools_0.2-20        ggraph_2.2.1            qvalue_2.35.0          
+    ##  [97] ggplotify_0.1.2         cli_3.6.2               systemfonts_1.0.6      
+    ## [100] munsell_0.5.1           Rcpp_1.0.12             GenomeInfoDb_1.39.14   
+    ## [103] png_0.1-8               parallel_4.4.0          blob_1.2.4             
+    ## [106] DOSE_3.29.2             viridisLite_0.4.2       tidytree_0.4.6         
+    ## [109] scales_1.3.0            crayon_1.5.2            GetoptLong_1.0.5       
+    ## [112] rlang_1.1.3             cowplot_1.1.3           fastmatch_1.1-4        
+    ## [115] KEGGREST_1.43.1

@@ -11,33 +11,11 @@ time and space. Export tables.
 ``` r
 rm(list=ls())
 
-library(DESeq2)
-```
-
-    ## Warning: package 'matrixStats' was built under R version 4.2.3
-
-``` r
 library(RColorBrewer)
 library(tidyverse)
-```
-
-    ## Warning: package 'tidyr' was built under R version 4.2.3
-
-    ## Warning: package 'readr' was built under R version 4.2.3
-
-    ## Warning: package 'dplyr' was built under R version 4.2.3
-
-    ## Warning: package 'stringr' was built under R version 4.2.3
-
-``` r
 library(ComplexHeatmap)
 library(factoextra)
 library(ggrepel)
-```
-
-    ## Warning: package 'ggrepel' was built under R version 4.2.3
-
-``` r
 library(UpSetR)
 ```
 
@@ -308,6 +286,10 @@ hmap <- Heatmap(vsd_hm_z,
     ## `use_raster` is automatically set to TRUE for a matrix with more than
     ## 2000 rows. You can control `use_raster` argument by explicitly setting
     ## TRUE/FALSE to it.
+    ## 
+    ## Set `ht_opt$message = FALSE` to turn off this message.
+
+    ## 'magick' package is suggested to install to give better rasterization.
     ## 
     ## Set `ht_opt$message = FALSE` to turn off this message.
 
@@ -585,6 +567,10 @@ hmap <- Heatmap(vsd_hm_z,
     ## 
     ## Set `ht_opt$message = FALSE` to turn off this message.
 
+    ## 'magick' package is suggested to install to give better rasterization.
+    ## 
+    ## Set `ht_opt$message = FALSE` to turn off this message.
+
 ``` r
 draw(hmap,
     heatmap_legend_side = 'left',
@@ -676,61 +662,49 @@ write.table(reclusteres_cluster_order %>% left_join(ann_table_clean, by = c("ord
 sessionInfo()
 ```
 
-    ## R version 4.2.2 (2022-10-31)
-    ## Platform: aarch64-apple-darwin20 (64-bit)
-    ## Running under: macOS 14.4.1
+    ## R version 4.4.0 (2024-04-24)
+    ## Platform: aarch64-apple-darwin20
+    ## Running under: macOS Sonoma 14.4.1
     ## 
     ## Matrix products: default
-    ## BLAS:   /Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/lib/libRblas.0.dylib
-    ## LAPACK: /Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/lib/libRlapack.dylib
+    ## BLAS:   /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRblas.0.dylib 
+    ## LAPACK: /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.12.0
     ## 
     ## locale:
     ## [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
     ## 
+    ## time zone: Europe/London
+    ## tzcode source: internal
+    ## 
     ## attached base packages:
-    ## [1] grid      stats4    stats     graphics  grDevices utils     datasets 
-    ## [8] methods   base     
+    ## [1] grid      stats     graphics  grDevices utils     datasets  methods  
+    ## [8] base     
     ## 
     ## other attached packages:
-    ##  [1] UpSetR_1.4.0                ggrepel_0.9.5              
-    ##  [3] factoextra_1.0.7            ComplexHeatmap_2.15.4      
-    ##  [5] lubridate_1.9.3             forcats_1.0.0              
-    ##  [7] stringr_1.5.1               dplyr_1.1.4                
-    ##  [9] purrr_1.0.2                 readr_2.1.5                
-    ## [11] tidyr_1.3.1                 tibble_3.2.1               
-    ## [13] ggplot2_3.5.1               tidyverse_2.0.0            
-    ## [15] RColorBrewer_1.1-3          DESeq2_1.38.3              
-    ## [17] SummarizedExperiment_1.28.0 Biobase_2.58.0             
-    ## [19] MatrixGenerics_1.10.0       matrixStats_1.3.0          
-    ## [21] GenomicRanges_1.50.2        GenomeInfoDb_1.34.9        
-    ## [23] IRanges_2.32.0              S4Vectors_0.36.2           
-    ## [25] BiocGenerics_0.44.0        
+    ##  [1] UpSetR_1.4.0          ggrepel_0.9.5         factoextra_1.0.7     
+    ##  [4] ComplexHeatmap_2.19.0 lubridate_1.9.3       forcats_1.0.0        
+    ##  [7] stringr_1.5.1         dplyr_1.1.4           purrr_1.0.2          
+    ## [10] readr_2.1.5           tidyr_1.3.1           tibble_3.2.1         
+    ## [13] ggplot2_3.5.1         tidyverse_2.0.0       RColorBrewer_1.1-3   
     ## 
     ## loaded via a namespace (and not attached):
-    ##  [1] bitops_1.0-7           bit64_4.0.5            doParallel_1.0.17     
-    ##  [4] httr_1.4.7             tools_4.2.2            utf8_1.2.4            
-    ##  [7] R6_2.5.1               DBI_1.2.2              colorspace_2.1-0      
-    ## [10] GetoptLong_1.0.5       withr_3.0.0            gridExtra_2.3         
-    ## [13] tidyselect_1.2.1       bit_4.0.5              compiler_4.2.2        
-    ## [16] cli_3.6.2              Cairo_1.6-2            DelayedArray_0.24.0   
-    ## [19] labeling_0.4.3         scales_1.3.0           digest_0.6.35         
-    ## [22] rmarkdown_2.26         XVector_0.38.0         pkgconfig_2.0.3       
-    ## [25] htmltools_0.5.8.1      highr_0.10             fastmap_1.1.1         
-    ## [28] rlang_1.1.3            GlobalOptions_0.1.2    rstudioapi_0.16.0     
-    ## [31] RSQLite_2.3.6          farver_2.1.1           shape_1.4.6.1         
-    ## [34] generics_0.1.3         BiocParallel_1.32.6    RCurl_1.98-1.14       
-    ## [37] magrittr_2.0.3         GenomeInfoDbData_1.2.9 Matrix_1.6-5          
-    ## [40] Rcpp_1.0.12            munsell_0.5.1          fansi_1.0.6           
-    ## [43] lifecycle_1.0.4        stringi_1.8.3          yaml_2.3.8            
-    ## [46] zlibbioc_1.44.0        plyr_1.8.9             blob_1.2.4            
-    ## [49] parallel_4.2.2         crayon_1.5.2           lattice_0.22-6        
-    ## [52] Biostrings_2.66.0      annotate_1.76.0        circlize_0.4.16       
-    ## [55] hms_1.1.3              KEGGREST_1.38.0        magick_2.8.3          
-    ## [58] locfit_1.5-9.9         knitr_1.46             pillar_1.9.0          
-    ## [61] rjson_0.2.21           geneplotter_1.76.0     codetools_0.2-20      
-    ## [64] XML_3.99-0.16.1        glue_1.7.0             evaluate_0.23         
-    ## [67] png_0.1-8              vctrs_0.6.5            tzdb_0.4.0            
-    ## [70] foreach_1.5.2          gtable_0.3.5           clue_0.3-65           
-    ## [73] cachem_1.0.8           xfun_0.43              xtable_1.8-4          
-    ## [76] iterators_1.0.14       AnnotationDbi_1.60.2   memoise_2.0.1         
-    ## [79] cluster_2.1.6          timechange_0.3.0
+    ##  [1] gtable_0.3.5        circlize_0.4.16     shape_1.4.6.1      
+    ##  [4] rjson_0.2.21        xfun_0.43           GlobalOptions_0.1.2
+    ##  [7] tzdb_0.4.0          vctrs_0.6.5         tools_4.4.0        
+    ## [10] generics_0.1.3      stats4_4.4.0        parallel_4.4.0     
+    ## [13] fansi_1.0.6         highr_0.10          cluster_2.1.6      
+    ## [16] pkgconfig_2.0.3     S4Vectors_0.41.7    lifecycle_1.0.4    
+    ## [19] compiler_4.4.0      farver_2.1.1        munsell_0.5.1      
+    ## [22] codetools_0.2-20    clue_0.3-65         htmltools_0.5.8.1  
+    ## [25] yaml_2.3.8          pillar_1.9.0        crayon_1.5.2       
+    ## [28] iterators_1.0.14    foreach_1.5.2       tidyselect_1.2.1   
+    ## [31] digest_0.6.35       stringi_1.8.3       labeling_0.4.3     
+    ## [34] fastmap_1.1.1       colorspace_2.1-0    cli_3.6.2          
+    ## [37] magrittr_2.0.3      utf8_1.2.4          withr_3.0.0        
+    ## [40] scales_1.3.0        timechange_0.3.0    rmarkdown_2.26     
+    ## [43] matrixStats_1.3.0   gridExtra_2.3       png_0.1-8          
+    ## [46] GetoptLong_1.0.5    hms_1.1.3           evaluate_0.23      
+    ## [49] knitr_1.46          IRanges_2.37.1      doParallel_1.0.17  
+    ## [52] rlang_1.1.3         Rcpp_1.0.12         glue_1.7.0         
+    ## [55] BiocGenerics_0.49.1 rstudioapi_0.16.0   R6_2.5.1           
+    ## [58] plyr_1.8.9

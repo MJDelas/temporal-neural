@@ -69,6 +69,8 @@ nextflow run luslab/briscoe-nf-tobias \
     - Fig 2 and Fig S1 temporal footprints and correlated TFs
 - [Screen](r_files/temporal_screen_1_hitselection.md)
     - Fig 2 and S2: screen results and hit highlight
-- [Fig 2 Eed, Ezh2, Brd8 mutant effects]
-- [Fig 3 Nr6a1 mutant effects]
+- [Mutant RNAseq](r_files/temporal_screen_2_hitsRNAseq.md)
+    - Fig 2 and S2 Polycomb and Brd8 mutants: temporal and spatial patterning defects
+    - Fig 3 and S3 Nr6a1 mutant: temporal defects
 - [Fig 3 Nr6a1 overexpression ATACseq]
+- [tempo and space integration]

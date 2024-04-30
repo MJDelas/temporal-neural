@@ -17,7 +17,11 @@ sorted.dayNfia <- c("D5_NFIAn_WT","D5_NFIAn_MUT",
 
 sorted.sample <- c("WT_D5_p1_NFIAn","WT_D5_p2_NFIAn","WT_D5_pM_NFIAn","WT_D7_p1_NFIAn","WT_D7_p2_NFIAn","WT_D7_pM_NFIAn","WT_D9_p1_NFIAn","WT_D9_p2_NFIAn","WT_D9_p2_NFIAp","WT_D9_pM_NFIAn","WT_D9_pM_NFIAp","WT_D11_p1_NFIAp","WT_D11_p2_NFIAp","WT_D11_pM_NFIAp")
 
-
+sorted_DayGate <- c("D5_p1","D5_p2","D5_pM",
+                    "D7_p1","D7_p2","D7_pM",
+                    "D9_p1","D9_p2","D9_pM",
+                    "D11_p1","D11_p2","D11_pM")
+sorted_WTDayGate <- paste("WT",sorted_DayGate, sep="_")
 
 gates <- c("p1","p2","pM")
 

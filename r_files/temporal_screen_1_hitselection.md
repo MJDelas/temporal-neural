@@ -6,22 +6,9 @@ Glial_CRISPR_Screen
 ``` r
 rm(list=ls())
 library(tidyverse)
-```
-
-    ## Warning: package 'tidyr' was built under R version 4.2.3
-
-    ## Warning: package 'readr' was built under R version 4.2.3
-
-    ## Warning: package 'dplyr' was built under R version 4.2.3
-
-    ## Warning: package 'stringr' was built under R version 4.2.3
-
-``` r
 library(ggpubr)
 library(ggrepel)
 ```
-
-    ## Warning: package 'ggrepel' was built under R version 4.2.3
 
 ### Load settings
 
@@ -39,7 +26,7 @@ outdir="outputs_glialscreen_1/"
 ifelse(!dir.exists(file.path(workingdir,outdir)), dir.create(file.path(workingdir,outdir)), "Directory exists")
 ```
 
-    ## [1] "Directory exists"
+    ## [1] TRUE
 
 ## Load data
 
@@ -452,16 +439,19 @@ plot_nfia_scatter_hits_relevant
 sessionInfo()
 ```
 
-    ## R version 4.2.2 (2022-10-31)
-    ## Platform: aarch64-apple-darwin20 (64-bit)
-    ## Running under: macOS 14.4.1
+    ## R version 4.4.0 (2024-04-24)
+    ## Platform: aarch64-apple-darwin20
+    ## Running under: macOS Sonoma 14.4.1
     ## 
     ## Matrix products: default
-    ## BLAS:   /Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/lib/libRblas.0.dylib
-    ## LAPACK: /Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/lib/libRlapack.dylib
+    ## BLAS:   /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRblas.0.dylib 
+    ## LAPACK: /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.12.0
     ## 
     ## locale:
     ## [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+    ## 
+    ## time zone: Europe/London
+    ## tzcode source: internal
     ## 
     ## attached base packages:
     ## [1] stats     graphics  grDevices utils     datasets  methods   base     
@@ -472,17 +462,17 @@ sessionInfo()
     ##  [9] tidyr_1.3.1     tibble_3.2.1    ggplot2_3.5.1   tidyverse_2.0.0
     ## 
     ## loaded via a namespace (and not attached):
-    ##  [1] tidyselect_1.2.1  xfun_0.43         splines_4.2.2     lattice_0.22-6   
-    ##  [5] carData_3.0-5     colorspace_2.1-0  vctrs_0.6.5       generics_0.1.3   
-    ##  [9] htmltools_0.5.8.1 yaml_2.3.8        mgcv_1.9-1        utf8_1.2.4       
-    ## [13] rlang_1.1.3       pillar_1.9.0      glue_1.7.0        withr_3.0.0      
-    ## [17] lifecycle_1.0.4   munsell_0.5.1     ggsignif_0.6.4    gtable_0.3.5     
-    ## [21] ragg_1.3.0        evaluate_0.23     labeling_0.4.3    knitr_1.46       
-    ## [25] tzdb_0.4.0        fastmap_1.1.1     fansi_1.0.6       highr_0.10       
-    ## [29] broom_1.0.5       Rcpp_1.0.12       scales_1.3.0      backports_1.4.1  
-    ## [33] abind_1.4-5       systemfonts_1.0.6 farver_2.1.1      textshaping_0.3.7
-    ## [37] hms_1.1.3         digest_0.6.35     stringi_1.8.3     rstatix_0.7.2    
-    ## [41] grid_4.2.2        cowplot_1.1.3     cli_3.6.2         tools_4.2.2      
-    ## [45] magrittr_2.0.3    crayon_1.5.2      car_3.1-2         pkgconfig_2.0.3  
-    ## [49] Matrix_1.6-5      timechange_0.3.0  rmarkdown_2.26    rstudioapi_0.16.0
-    ## [53] R6_2.5.1          nlme_3.1-164      compiler_4.2.2
+    ##  [1] utf8_1.2.4        generics_0.1.3    rstatix_0.7.2     lattice_0.22-6   
+    ##  [5] stringi_1.8.3     hms_1.1.3         digest_0.6.35     magrittr_2.0.3   
+    ##  [9] evaluate_0.23     grid_4.4.0        timechange_0.3.0  fastmap_1.1.1    
+    ## [13] Matrix_1.7-0      backports_1.4.1   mgcv_1.9-1        fansi_1.0.6      
+    ## [17] scales_1.3.0      textshaping_0.3.7 abind_1.4-5       cli_3.6.2        
+    ## [21] crayon_1.5.2      rlang_1.1.3       splines_4.4.0     cowplot_1.1.3    
+    ## [25] munsell_0.5.1     withr_3.0.0       yaml_2.3.8        tools_4.4.0      
+    ## [29] tzdb_0.4.0        ggsignif_0.6.4    colorspace_2.1-0  broom_1.0.5      
+    ## [33] vctrs_0.6.5       R6_2.5.1          lifecycle_1.0.4   car_3.1-2        
+    ## [37] ragg_1.3.0        pkgconfig_2.0.3   pillar_1.9.0      gtable_0.3.5     
+    ## [41] glue_1.7.0        Rcpp_1.0.12       systemfonts_1.0.6 highr_0.10       
+    ## [45] xfun_0.43         tidyselect_1.2.1  rstudioapi_0.16.0 knitr_1.46       
+    ## [49] farver_2.1.1      nlme_3.1-164      htmltools_0.5.8.1 labeling_0.4.3   
+    ## [53] rmarkdown_2.26    carData_3.0-5     compiler_4.4.0

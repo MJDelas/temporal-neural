@@ -18,7 +18,6 @@ Imports diff accessibility and plots numbers of elements changing in time and sp
 
 rm(list=ls())
 
-library(DESeq2)
 library(RColorBrewer)
 library(tidyverse)
 library(ComplexHeatmap)
