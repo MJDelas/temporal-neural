@@ -67,8 +67,8 @@ nextflow run luslab/briscoe-nf-tobias \
     - Tables Supp, temporal genes for all domains, temporally dynamic and cell type specific genes.
 - [Footprinting 1](r_files/temporal_footprint_1_WT.md)
     - Fig 2 and Fig S1 temporal footprints and correlated TFs
-- [Fig 2 footprints and TF expression]
-- [Fig 2 screen results]
+- [Screen](r_files/temporal_screen_1_hitselection.md)
+    - Fig 2 and S2: screen results and hit highlight
 - [Fig 2 Eed, Ezh2, Brd8 mutant effects]
 - [Fig 3 Nr6a1 mutant effects]
 - [Fig 3 Nr6a1 overexpression ATACseq]
