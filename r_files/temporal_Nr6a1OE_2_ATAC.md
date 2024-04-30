@@ -135,7 +135,7 @@ ggplot(results_sub_plot1, aes(x=log2FoldChange, y=-log10(padj), color=color_sig)
     ## Warning: Removed 7 rows containing missing values or values outside the scale range
     ## (`geom_point()`).
 
-![](tempral_Nr6a1OE_2_ATAC_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+![](temporal_Nr6a1OE_2_ATAC_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
 
 ``` r
 plot_nr6a1ATAC_volcano <- ggplot(results_sub_plot1, aes(x=log2FoldChange, y=-log10(padj), color=color_sig)) +
