@@ -43,4 +43,29 @@ shapes4_manual = c(18,15,16,17) # these are block
 shapes5_manual = c(25,21,22,23,24) # these are filled
 shapes4_fill_manual = c(23,21,22,24)
 
-
+sorted.sample.wReps.all <- c("WT_D5_p1_NFIAn_R1","WT_D5_p1_NFIAn_R2",
+                             "WT_D5_p2_NFIAn_R1","WT_D5_p2_NFIAn_R2",
+                             "WT_D5_pM_NFIAn_R1","WT_D5_pM_NFIAn_R2",
+                             "WT_D7_p1_NFIAn_R1","WT_D7_p1_NFIAn_R2","WT_D7_p1_NFIAn_R3",
+                             "WT_D7_p2_NFIAn_R1","WT_D7_p2_NFIAn_R2","WT_D7_p2_NFIAn_R3",
+                             "WT_D7_pM_NFIAn_R1","WT_D7_pM_NFIAn_R2","WT_D7_pM_NFIAn_R3",
+                             "WT_D9_p1_NFIAn_R2","WT_D9_p1_NFIAn_R3","WT_D9_p1_NFIAn_R1",
+                             "WT_D9_p2_NFIAn_R1","WT_D9_p2_NFIAn_R2","WT_D9_p2_NFIAn_R3",
+                             "WT_D9_p2_NFIAp_R2","WT_D9_p2_NFIAp_R3","WT_D9_p2_NFIAp_R1",
+                             "WT_D9_pM_NFIAp_R1","WT_D9_pM_NFIAp_R2","WT_D9_pM_NFIAp_R3",
+                             "WT_D9_pM_NFIAn_R2","WT_D9_pM_NFIAn_R1",
+                             "WT_D11_p1_NFIAp_R1","WT_D11_p1_NFIAp_R2","WT_D11_p1_NFIAp_R3",
+                             "WT_D11_p2_NFIAp_R1","WT_D11_p2_NFIAp_R2","WT_D11_p2_NFIAp_R3",
+                             "WT_D11_pM_NFIAp_R1","WT_D11_pM_NFIAp_R2","WT_D11_pM_NFIAp_R3",
+                             "MUT_D5_p1_NFIAn_R1","MUT_D5_p1_NFIAn_R2","MUT_D5_p1_NFIAn_R3",
+                             "MUT_D5_p2_NFIAn_R1","MUT_D5_p2_NFIAn_R2","MUT_D5_p2_NFIAn_R3",
+                             "MUT_D5_pM_NFIAn_R1","MUT_D5_pM_NFIAn_R2","MUT_D5_pM_NFIAn_R3",
+                             "MUT_D7_p1_NFIAn_R1","MUT_D7_p1_NFIAn_R2","MUT_D7_p1_NFIAn_R3",
+                             "MUT_D7_p2_NFIAn_R1","MUT_D7_p2_NFIAn_R2","MUT_D7_p2_NFIAn_R3",
+                             "MUT_D7_pM_NFIAn_R1","MUT_D7_pM_NFIAn_R2","MUT_D7_pM_NFIAn_R3",
+                             "MUT_D9_p1_NFIAn_R2","MUT_D9_p1_NFIAn_R1",
+                             "MUT_D9_p2_NFIAn_R1","MUT_D9_p2_NFIAn_R2",
+                             "MUT_D9_pM_NFIAn_R2","MUT_D9_pM_NFIAn_R1",
+                             "MUT_D11_p1_NFIAn_R1","MUT_D11_p1_NFIAn_R2","MUT_D11_p1_NFIAn_R3",
+                             "MUT_D11_p2_NFIAn_R1","MUT_D11_p2_NFIAn_R2","MUT_D11_p2_NFIAn_R3",
+                             "MUT_D11_pM_NFIAn_R1","MUT_D11_pM_NFIAn_R2","MUT_D11_pM_NFIAn_R3")
