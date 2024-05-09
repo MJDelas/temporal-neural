@@ -26,12 +26,12 @@ source('./r_inputs/TemporalSpatialNeuralTube_settings.R')
 ### Set dirs
 
 ``` r
-outdir="outputs_glialatac_6_NFIAB_KO/"
+outdir="outputs_NFIAB_ATAC"
 subworkinput="inputs_glialatac_1_eda_pca/"
 ifelse(!dir.exists(file.path(workingdir,outdir)), dir.create(file.path(workingdir,outdir)), "Directory exists")
 ```
 
-    ## [1] "Directory exists"
+    ## [1] TRUE
 
 ## Load data
 
@@ -577,7 +577,7 @@ draw(hmap,
 
 ``` r
 # print heatmap
-pdf(paste0(workingdir,subworkinput,"Heatmap_NFIAB_KOup_ATAC.pdf"), width = 6.75, height = 3.5) 
+pdf(paste0(workingdir,outdir,"Heatmap_NFIAB_KOup_ATAC.pdf"), width = 6.75, height = 3.5) 
 
 draw(hmap,
     heatmap_legend_side = 'left',
