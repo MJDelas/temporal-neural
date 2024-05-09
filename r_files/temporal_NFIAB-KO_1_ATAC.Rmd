@@ -35,7 +35,7 @@ source('./r_inputs/TemporalSpatialNeuralTube_settings.R')
 
 ### Set dirs
 ```{r}
-outdir="outputs_NFIAB_ATAC"
+outdir="outputs_NFIAB_ATAC/"
 subworkinput="inputs_glialatac_1_eda_pca/"
 ifelse(!dir.exists(file.path(workingdir,outdir)), dir.create(file.path(workingdir,outdir)), "Directory exists")
 
