@@ -1,19 +1,11 @@
----
-title: "ATAC_NFIAB_KO"
-output: github_document
----
-
-```{r setup, include=FALSE}
-
-knitr::opts_chunk$set(echo = TRUE)
-
-```
+ATAC_NFIAB_KO
+================
 
 # ATAC analysis
-Differential accessibility defects in NIFA/B KO. 
 
-```{r message=FALSE}
+Differential accessibility defects in NIFA/B KO.
 
+``` r
 rm(list=ls())
 
 library(DESeq2)
@@ -21,33 +13,29 @@ library(RColorBrewer)
 library(tidyverse)
 library(ComplexHeatmap)
 library(UpSetR)
-
 ```
 
 ### Load settings
 
-Colors, main directory 
+Colors, main directory
 
-```{r}
+``` r
 source('./r_inputs/TemporalSpatialNeuralTube_settings.R')
 ```
 
-
 ### Set dirs
-```{r}
+
+``` r
 outdir="outputs_glialatac_6_NFIAB_KO/"
 subworkinput="inputs_glialatac_1_eda_pca/"
 ifelse(!dir.exists(file.path(workingdir,outdir)), dir.create(file.path(workingdir,outdir)), "Directory exists")
-
-
 ```
 
-
+    ## [1] "Directory exists"
 
 ## Load data
 
-```{r }
-
+``` r
 #counts table
 count_table <- read.table(file=paste0(workingdir,subworkinput,"consensus_peaks.mLb.clN.featureCounts.txt"),header=TRUE, stringsAsFactors = FALSE)
 
@@ -67,17 +55,16 @@ colnames(ann_table)[1] <- "Peakid"
 ann_table_clean <- ann_table %>% 
   select(c("Peakid","Chr","Start","End","Strand","Annotation","Distance.to.TSS","Nearest.PromoterID")) %>%
   separate(Annotation, into = "Annotation_brief", sep = " ", remove = FALSE)
-
-
 ```
+
+    ## Warning: Expected 1 pieces. Additional pieces discarded in 87054 rows [2, 3, 4, 8, 11,
+    ## 12, 15, 16, 17, 20, 24, 28, 29, 32, 33, 35, 36, 37, 40, 42, ...].
 
 ## Load vsd to plot heatmaps later
-```{r load-vsd}
 
+``` r
 count_vsd <- read.csv(file=paste0(workingdir,"outputs_glialatac_1/","consensus_peaks.mLb.vsd.csv"),header=TRUE, stringsAsFactors = FALSE)
-
 ```
-
 
 ## Differential analysis between WT and KO for each domain at two timepoints
 
@@ -85,11 +72,7 @@ Targeted diff analysis in subsets of samples D11:
 
 WT vs KO: pairwise for p1, p2, pMN
 
-
-
-```{r diff-KO-WT}
-
-
+``` r
 #subset 
 timepoint=c("_D7_","_D11_")
 
@@ -139,14 +122,105 @@ PairWiseDEseq <- lapply(c(1:length(timepoint)),function (x) {
 
   })
 }) 
-
 ```
+
+    ## Warning in DESeqDataSet(se, design = design, ignoreRank): some variables in
+    ## design formula are characters, converting to factors
+
+    ## estimating size factors
+
+    ## estimating dispersions
+
+    ## gene-wise dispersion estimates
+
+    ## mean-dispersion relationship
+
+    ## final dispersion estimates
+
+    ## fitting model and testing
+
+    ## Warning in DESeqDataSet(se, design = design, ignoreRank): some variables in
+    ## design formula are characters, converting to factors
+
+    ## estimating size factors
+
+    ## estimating dispersions
+
+    ## gene-wise dispersion estimates
+
+    ## mean-dispersion relationship
+
+    ## final dispersion estimates
+
+    ## fitting model and testing
+
+    ## Warning in DESeqDataSet(se, design = design, ignoreRank): some variables in
+    ## design formula are characters, converting to factors
+
+    ## estimating size factors
+
+    ## estimating dispersions
+
+    ## gene-wise dispersion estimates
+
+    ## mean-dispersion relationship
+
+    ## final dispersion estimates
+
+    ## fitting model and testing
+
+    ## Warning in DESeqDataSet(se, design = design, ignoreRank): some variables in
+    ## design formula are characters, converting to factors
+
+    ## estimating size factors
+
+    ## estimating dispersions
+
+    ## gene-wise dispersion estimates
+
+    ## mean-dispersion relationship
+
+    ## final dispersion estimates
+
+    ## fitting model and testing
+
+    ## Warning in DESeqDataSet(se, design = design, ignoreRank): some variables in
+    ## design formula are characters, converting to factors
+
+    ## estimating size factors
+
+    ## estimating dispersions
+
+    ## gene-wise dispersion estimates
+
+    ## mean-dispersion relationship
+
+    ## final dispersion estimates
+
+    ## fitting model and testing
+
+    ## Warning in DESeqDataSet(se, design = design, ignoreRank): some variables in
+    ## design formula are characters, converting to factors
+
+    ## estimating size factors
+
+    ## estimating dispersions
+
+    ## gene-wise dispersion estimates
+
+    ## mean-dispersion relationship
+
+    ## final dispersion estimates
+
+    ## fitting model and testing
 
 ### How many diff acc elements between WT and KO?
 
-D7 WT vs KO does not have any elements fulfilling the filtering so they don't get plotted. TODO : change the bar graph to plot zeros by using something like count. 
+D7 WT vs KO does not have any elements fulfilling the filtering so they
+don’t get plotted. TODO : change the bar graph to plot zeros by using
+something like count.
 
-```{r filter-KO}
+``` r
 PairWiseDEseq_list <- unlist(PairWiseDEseq, recursive = FALSE)
 results_deseq_nfia <- do.call(rbind,PairWiseDEseq_list)
 
@@ -165,13 +239,13 @@ ggplot(top_KO_comparisons_count, aes(x=Comparison,y=n)) +
   geom_col() +
   geom_point(color="black", fill="grey",shape=21) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-
-
 ```
+
+![](temporal_NFIAB-KO_1_ATAC_files/figure-gfm/filter-KO-1.png)<!-- -->
 
 ### Are they the same ones?
 
-```{r}
+``` r
 comparison_vector <- top_KO_comparisons$Comparison %>% unique()
 
 list_test <- lapply(comparison_vector, function(x) {
@@ -181,10 +255,11 @@ names(list_test) <- comparison_vector
 
 upset(fromList(list_test), sets=comparison_vector, order.by = "freq")
 ```
-### Visualise the elements that change
 
-```{r plot-vsd-KO}
+![](temporal_NFIAB-KO_1_ATAC_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+\### Visualise the elements that change
 
+``` r
 interval_subset <- top_KO_comparisons$Interval %>% unique()
 
 # filter elements
@@ -193,7 +268,11 @@ vsd_hm <- count_vsd %>%
   column_to_rownames("X") 
 
 dim(vsd_hm)
+```
 
+    ## [1] 2126   71
+
+``` r
 # z score
 vsd_hm_z <- t(scale(t(vsd_hm))) 
 
@@ -278,30 +357,39 @@ hmap <- Heatmap(vsd_hm_z,
 
     # specify top and bottom annotations
       top_annotation = colAnn)
-
 ```
 
+    ## `use_raster` is automatically set to TRUE for a matrix with more than
+    ## 2000 rows. You can control `use_raster` argument by explicitly setting
+    ## TRUE/FALSE to it.
+    ## 
+    ## Set `ht_opt$message = FALSE` to turn off this message.
 
-```{r}
+    ## 'magick' package is suggested to install to give better rasterization.
+    ## 
+    ## Set `ht_opt$message = FALSE` to turn off this message.
 
+``` r
 draw(hmap,
     heatmap_legend_side = 'left',
     annotation_legend_side = 'left',
     row_sub_title_side = 'left')
-
 ```
 
-
+![](temporal_NFIAB-KO_1_ATAC_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
 ### Panel: upregulated with KO changes
 
-All the changing elements (except 2) are downregulated in the mutant at day 11 and should have been upregulated in over itme. 
+All the changing elements (except 2) are downregulated in the mutant at
+day 11 and should have been upregulated in over itme.
 
-Plot the upregualted genes over time to visualize those affected by NFIA/B.
+Plot the upregualted genes over time to visualize those affected by
+NFIA/B.
 
 #### Import data and select time elements
 
-This is from `glialatac_2_time_space_1` where we already processed diff acc between timepoints for WT only
+This is from `glialatac_2_time_space_1` where we already processed diff
+acc between timepoints for WT only
 
 Wild type only:
 
@@ -311,9 +399,7 @@ p2: pairwise only for D7-D11
 
 pM: pairwise only for D7-D11
 
-
-```{r import-time}
-
+``` r
 subworkinput="outputs_glialatac_2_time_space/"
 suboutdir2="output_Time_Specific/"
 
@@ -327,24 +413,17 @@ PairWiseDEseq_days <- lapply(list.files(path=paste0(workingdir,subworkinput,subo
 })
 
 results_deseq_days <- do.call(rbind,PairWiseDEseq_days)
-
 ```
 
-
-
-```{r filter-days}
-
+``` r
 top_days_comparisons <- results_deseq_days %>%
   as.data.frame() %>%
   filter(padj < 0.01 & abs(log2FoldChange) > 2 & baseMean > 100)
-
 ```
-
 
 #### plot
 
-```{r plot-vsd-uptime}
-
+``` r
 interval_subset_up <- top_days_comparisons %>% filter(log2FoldChange < 0) %>%
   select(Intervals) %>% unique()
 #  top_days_comparisons$Intervals %>% unique()
@@ -358,7 +437,11 @@ vsd_hm <- count_vsd %>%
 
 
 dim(vsd_hm)
+```
 
+    ## [1] 7206   71
+
+``` r
 # z score
 vsd_hm_z <- t(scale(t(vsd_hm))) 
 
@@ -471,17 +554,28 @@ hmap <- Heatmap(vsd_hm_z,
     # specify top and bottom annotations
     right_annotation = rowAnn,  
     top_annotation = colAnn)
-
 ```
 
+    ## `use_raster` is automatically set to TRUE for a matrix with more than
+    ## 2000 rows. You can control `use_raster` argument by explicitly setting
+    ## TRUE/FALSE to it.
+    ## 
+    ## Set `ht_opt$message = FALSE` to turn off this message.
 
-```{r fig.width=6.75, fig.height=3.5}
+    ## 'magick' package is suggested to install to give better rasterization.
+    ## 
+    ## Set `ht_opt$message = FALSE` to turn off this message.
 
+``` r
 draw(hmap,
     heatmap_legend_side = 'left',
     annotation_legend_side = 'left',
     row_sub_title_side = 'left')
+```
 
+![](temporal_NFIAB-KO_1_ATAC_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+
+``` r
 # print heatmap
 pdf(paste0(workingdir,subworkinput,"Heatmap_NFIAB_KOup_ATAC.pdf"), width = 6.75, height = 3.5) 
 
@@ -491,11 +585,68 @@ draw(hmap,
     row_sub_title_side = 'left')
 
 dev.off()
-
 ```
 
+    ## quartz_off_screen 
+    ##                 2
 
-
-```{r}
+``` r
 sessionInfo()
 ```
+
+    ## R version 4.4.0 (2024-04-24)
+    ## Platform: aarch64-apple-darwin20
+    ## Running under: macOS Sonoma 14.4.1
+    ## 
+    ## Matrix products: default
+    ## BLAS:   /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRblas.0.dylib 
+    ## LAPACK: /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.12.0
+    ## 
+    ## locale:
+    ## [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+    ## 
+    ## time zone: Europe/London
+    ## tzcode source: internal
+    ## 
+    ## attached base packages:
+    ## [1] grid      stats4    stats     graphics  grDevices utils     datasets 
+    ## [8] methods   base     
+    ## 
+    ## other attached packages:
+    ##  [1] UpSetR_1.4.0                ComplexHeatmap_2.19.0      
+    ##  [3] lubridate_1.9.3             forcats_1.0.0              
+    ##  [5] stringr_1.5.1               dplyr_1.1.4                
+    ##  [7] purrr_1.0.2                 readr_2.1.5                
+    ##  [9] tidyr_1.3.1                 tibble_3.2.1               
+    ## [11] ggplot2_3.5.1               tidyverse_2.0.0            
+    ## [13] RColorBrewer_1.1-3          DESeq2_1.43.5              
+    ## [15] SummarizedExperiment_1.33.3 Biobase_2.63.1             
+    ## [17] MatrixGenerics_1.15.1       matrixStats_1.3.0          
+    ## [19] GenomicRanges_1.55.4        GenomeInfoDb_1.39.14       
+    ## [21] IRanges_2.37.1              S4Vectors_0.41.7           
+    ## [23] BiocGenerics_0.49.1        
+    ## 
+    ## loaded via a namespace (and not attached):
+    ##  [1] tidyselect_1.2.1        farver_2.1.1            fastmap_1.1.1          
+    ##  [4] digest_0.6.35           timechange_0.3.0        lifecycle_1.0.4        
+    ##  [7] cluster_2.1.6           Cairo_1.6-2             magrittr_2.0.3         
+    ## [10] compiler_4.4.0          rlang_1.1.3             tools_4.4.0            
+    ## [13] utf8_1.2.4              yaml_2.3.8              knitr_1.46             
+    ## [16] labeling_0.4.3          S4Arrays_1.3.7          DelayedArray_0.29.9    
+    ## [19] plyr_1.8.9              abind_1.4-5             BiocParallel_1.37.1    
+    ## [22] withr_3.0.0             fansi_1.0.6             colorspace_2.1-0       
+    ## [25] scales_1.3.0            iterators_1.0.14        cli_3.6.2              
+    ## [28] rmarkdown_2.26          crayon_1.5.2            generics_0.1.3         
+    ## [31] rstudioapi_0.16.0       httr_1.4.7              tzdb_0.4.0             
+    ## [34] rjson_0.2.21            zlibbioc_1.49.3         parallel_4.4.0         
+    ## [37] XVector_0.43.1          vctrs_0.6.5             Matrix_1.7-0           
+    ## [40] jsonlite_1.8.8          hms_1.1.3               GetoptLong_1.0.5       
+    ## [43] clue_0.3-65             locfit_1.5-9.9          foreach_1.5.2          
+    ## [46] glue_1.7.0              codetools_0.2-20        stringi_1.8.3          
+    ## [49] gtable_0.3.5            shape_1.4.6.1           UCSC.utils_0.99.7      
+    ## [52] munsell_0.5.1           pillar_1.9.0            htmltools_0.5.8.1      
+    ## [55] GenomeInfoDbData_1.2.12 circlize_0.4.16         R6_2.5.1               
+    ## [58] doParallel_1.0.17       evaluate_0.23           lattice_0.22-6         
+    ## [61] highr_0.10              png_0.1-8               Rcpp_1.0.12            
+    ## [64] gridExtra_2.3           SparseArray_1.3.7       xfun_0.43              
+    ## [67] pkgconfig_2.0.3         GlobalOptions_0.1.2

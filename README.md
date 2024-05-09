@@ -77,4 +77,8 @@ nextflow run luslab/briscoe-nf-tobias \
 - [Nr6a1 OE ATAC 2](r_files/temporal_Nr6a1OE_3_ATAC.md)
     - Fig 3 Accessibility in wild type CaTS-ATAC for elements changing in Nr6a1 overexpression
 - [tempo and space integration]
-- [NFIA/B KO]
+
+- [NFIA/B KO ATAC](r_files/temporal_NFIAB-KO_1_ATAC.md)
+    - Fig 4 heatmap
+- [NFIA/B KO RNA]()
+    - Fig 4 bar plots 
