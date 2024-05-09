@@ -80,5 +80,5 @@ nextflow run luslab/briscoe-nf-tobias \
 
 - [NFIA/B KO ATAC](r_files/temporal_NFIAB-KO_1_ATAC.md)
     - Fig 4 heatmap
-- [NFIA/B KO RNA]()
+- [NFIA/B KO RNA](r_files/temporal_NFIAB-KO_2_RNA.md)
     - Fig 4 bar plots 
