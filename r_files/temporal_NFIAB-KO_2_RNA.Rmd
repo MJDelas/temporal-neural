@@ -40,7 +40,7 @@ source('./r_inputs/TemporalSpatialNeuralTube_settings.R')
 
 ### Set dirs
 ```{r}
-outdir="outputs_NFIAB_RNA"
+outdir="outputs_NFIAB_RNA/"
 #outdir="outputs_glialRNA_3_NFIAB_KO/"
 subworkinput="inputs_glialRNA_1_qc/"
 ifelse(!dir.exists(file.path(workingdir,outdir)), dir.create(file.path(workingdir,outdir)), "Directory exists")
