@@ -76,8 +76,8 @@ nextflow run luslab/briscoe-nf-tobias \
     - Fig 3 Accessibility changes upon Nr6a1 overexpression
 - [Nr6a1 OE ATAC 2](r_files/temporal_Nr6a1OE_3_ATAC.md)
     - Fig 3 Accessibility in wild type CaTS-ATAC for elements changing in Nr6a1 overexpression
-- [tempo and space integration]
-
+- [Time and space integration](r_files/temporal_multi_2_time_and_space_genes.md)
+    - Fig 4 and S4 cell type specific and temporally dynamic genes and associated elements
 - [NFIA/B KO ATAC](r_files/temporal_NFIAB-KO_1_ATAC.md)
     - Fig 4 heatmap
 - [NFIA/B KO RNA](r_files/temporal_NFIAB-KO_2_RNA.md)
