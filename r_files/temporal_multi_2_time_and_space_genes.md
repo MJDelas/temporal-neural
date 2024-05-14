@@ -1,35 +1,22 @@
----
-title: "Multi_time-and-space_genes"
-output: github_document
-always_allow_html: true
----
-
-```{r setup, include=FALSE}
-
-knitr::opts_chunk$set(echo = TRUE)
-
-```
+Multi_time-and-space_genes
+================
 
 ## Exploring predicted element-gene pairs
 
-
-
-```{r message=FALSE}
-
+``` r
 rm(list=ls())
 
 library(RColorBrewer)
 library(tidyverse)
 library(readxl)
 library(ComplexHeatmap)
-
 ```
 
 ### Load settings
 
-Colors, main directory 
+Colors, main directory
 
-```{r}
+``` r
 source('./r_inputs/TemporalSpatialNeuralTube_settings.R')
 ```
 
@@ -37,8 +24,7 @@ source('./r_inputs/TemporalSpatialNeuralTube_settings.R')
 
 Downstream of `glialmulti_8-1_figRcorrelation_AnyGeneWTSamples`
 
-```{r}
-
+``` r
 subworkinput1="outputs_glialmulti_9_figR_AnyGenes_p1/"
 subworkinput2="outputs_glialmulti_9_figR_AnyGenes_p2/"
 subworkinput3="outputs_glialmulti_9_figR_AnyGenes_pMN/"
@@ -46,20 +32,17 @@ subworkinput3="outputs_glialmulti_9_figR_AnyGenes_pMN/"
 
 outdir="outputs_glialmulti_time_space_genes_panels/"
 ifelse(!dir.exists(file.path(workingdir,outdir)), dir.create(file.path(workingdir,outdir)), "Directory exists")
-
-
 ```
 
-
+    ## [1] "Directory exists"
 
 ## Load data
 
-### Load intervals 
+### Load intervals
 
 - vsd and annotation to plot heatmaps later
 
-```{r load-vsd-ann}
-
+``` r
 count_vsd <- read.csv(file=paste0(workingdir,"outputs_glialatac_1/","consensus_peaks.mLb.vsd.csv"),header=TRUE, stringsAsFactors = FALSE)
 count_atac <- read.table(file = paste0(workingdir,"outputs_glialatac_1/","consensus_peaks.mLb.clN.normCounts.txt"),header=TRUE, stringsAsFactors = FALSE)
 
@@ -71,45 +54,36 @@ colnames(ann_table)[1] <- "Peakid"
 ann_table_clean <- ann_table %>% 
   dplyr::select(c("Peakid","Chr","Start","End","Strand","Annotation","Distance.to.TSS","Nearest.PromoterID")) %>%
   separate(Annotation, into = "Annotation_brief", sep = " ", remove = FALSE)
-
 ```
 
-
+    ## Warning: Expected 1 pieces. Additional pieces discarded in 87054 rows [2, 3, 4, 8, 11,
+    ## 12, 15, 16, 17, 20, 24, 28, 29, 32, 33, 35, 36, 37, 40, 42, ...].
 
 ## Import RNA
 
-```{r}
-
+``` r
 rna_vsd <- read.csv(paste0(workingdir,"outputs_glialRNA_1/","featurecounts.vsd.csv"),stringsAsFactors =FALSE)
-
 ```
-
 
 ## Import results from figR
 
-```{r}
-
+``` r
 # cisCor associated peaks to genes, unfiltered, with the corr and pvalZ
 cisCor_p1 <- read.csv(paste0(workingdir,subworkinput1,"corr_unfiltered_500kb.csv"), stringsAsFactors =FALSE)
 cisCor_p2 <- read.csv(paste0(workingdir,subworkinput2,"corr_unfiltered_500kb.csv"), stringsAsFactors =FALSE)
 cisCor_pMN <- read.csv(paste0(workingdir,subworkinput3,"corr_unfiltered_500kb.csv"), stringsAsFactors =FALSE)
-
 ```
-
 
 ### Gene heatmap of the domain 2 or more gene list
 
-```{r}
-
+``` r
 domain2ormore <- read.csv(paste0(workingdir,"outputs_glialrna_2_time_space/","Genes_domains_two-or-more_comparisons.csv"), 
                           stringsAsFactors =FALSE)
-
 ```
 
-Filter and make heatmap 
+Filter and make heatmap
 
-```{r}
-
+``` r
 # filter elements in imported file
 vsd_hm <- rna_vsd %>%
   filter(X %in% domain2ormore$GeneID) %>%
@@ -166,14 +140,11 @@ colAnn <- HeatmapAnnotation(
     annotation_height = 0.6,
     annotation_width = unit(1, 'cm'),
     gap = unit(1, 'mm'))
-
-
 ```
-
 
 Cluster the genes to then show the same clusters for elements
 
-```{r }
+``` r
 set.seed(123)  #For reproduciblity
 hmap_clust <- Heatmap(vsd_hm_z,
     km=12,
@@ -222,17 +193,20 @@ hmap_clust <- Heatmap(vsd_hm_z,
     # specify top and bottom annotations
       #left_annotation = rowAnn,
       top_annotation = colAnn)
-
 ```
 
-```{r fig.height=4, fig.width=5.5}
+``` r
 set.seed(123)  #For reproduciblity
 
 hmap_clust <- draw(hmap_clust,
     heatmap_legend_side = 'left',
     annotation_legend_side = 'left',
     row_sub_title_side = 'left')
+```
 
+![](temporal_multi_2_time_and_space_genes_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+
+``` r
 # print heatmap
 pdf(paste0(workingdir,outdir,"Heatmap_RNA_t_and_s_Clustered.pdf"), width = 5.5, height = 4)
 set.seed(123)
@@ -242,18 +216,55 @@ draw(hmap_clust,
     row_sub_title_side = 'right')
 
 dev.off()
-
-
 ```
 
+    ## quartz_off_screen 
+    ##                 2
 
-```{r}
+``` r
 r.dend <- row_dend(hmap_clust)  #Extract row dendrogram
 rcl.list <- row_order(hmap_clust)  #Extract clusters (output is a list)
 
 lapply(rcl.list, function(x) length(x))  #check/confirm size clusters
+```
 
+    ## $`1`
+    ## [1] 38
+    ## 
+    ## $`2`
+    ## [1] 25
+    ## 
+    ## $`3`
+    ## [1] 38
+    ## 
+    ## $`4`
+    ## [1] 32
+    ## 
+    ## $`5`
+    ## [1] 31
+    ## 
+    ## $`6`
+    ## [1] 30
+    ## 
+    ## $`7`
+    ## [1] 22
+    ## 
+    ## $`8`
+    ## [1] 39
+    ## 
+    ## $`9`
+    ## [1] 20
+    ## 
+    ## $`10`
+    ## [1] 27
+    ## 
+    ## $`11`
+    ## [1] 18
+    ## 
+    ## $`12`
+    ## [1] 16
 
+``` r
 # loop to extract genes for each cluster.
 for (i in 1:length(row_order(hmap_clust))){
  if (i == 1) {
@@ -270,16 +281,13 @@ for (i in 1:length(row_order(hmap_clust))){
 gene_clusters <- as.data.frame(out)
 
 write.csv(gene_clusters,paste0(workingdir,outdir,"clusters_tANDs_genes.csv"),quote = FALSE)
-
 ```
-
 
 ### Element heatmap for the best correlated peak in same order
 
 Get the gene order
 
-```{r}
-
+``` r
 #gene_order <- row_order(hmap)
 
 # get order of the rows
@@ -289,25 +297,19 @@ genes_ordered <- vsd_hm_z[generow$`unlist(row_order(hmap_clust))`,] %>%
   as.data.frame() %>%
   rownames_to_column("geneid") %>%
   dplyr::select("geneid")
-
 ```
-
 
 ### Best cell type match per gene: significant
 
 For each:
 
-`cisCor_p1`
-`cisCor_p2`
-`cisCor_pMN`
+`cisCor_p1` `cisCor_p2` `cisCor_pMN`
 
 - add a column for which comparison
 - rowbind
-- select significant and also best cell type 
+- select significant and also best cell type
 
-
-```{r}
-
+``` r
 cisCor_p1_merge <- cisCor_p1 %>%
   mutate(celltype="p1")
 cisCor_p2_merge <- cisCor_p2 %>%
@@ -329,14 +331,11 @@ peaks_formatching <- ann_table_clean %>%
 
 cisCor_peakID <- cisCor_bestcelltype %>%
   left_join(peaks_formatching, by = "PeakRanges")
-
 ```
-
 
 Match element to gene by best correlated in any cell type.
 
-```{r}
-
+``` r
 cisCor_bestcelltype <- cisCor_merged %>%
   group_by(Peak,Gene) %>%
   #filter(pvalZ==min(pvalZ)) %>% #most significant for each 
@@ -349,17 +348,13 @@ peaks_formatching <- ann_table_clean %>%
 
 cisCor_peakID <- cisCor_bestcelltype %>%
   left_join(peaks_formatching, by = "PeakRanges")
-
 ```
 
+### pvalz \< 0.1, rObs \> 0
 
-### pvalz < 0.1, rObs > 0
+Using `cisCorr.filt` is now for pvalZ \< 0.1
 
-
-Using `cisCorr.filt` is now for pvalZ < 0.1
-
-```{r}
-
+``` r
 cisCorr.filt <- cisCor_peakID %>% filter(pvalZ <= 0.1)
 
 # joining to the clustered
@@ -374,13 +369,11 @@ elements_ordered_uniquegene <- elements_ordered_manymatches %>%
   group_by(Peakid) %>% # I need each element only once for the heatmap so just in case
   filter(rObs==max(rObs)) %>%
   filter(pvalZ==min(pvalZ))
-
 ```
 
-Annotate the temporal elements as identified independetly 
+Annotate the temporal elements as identified independetly
 
-```{r}
-
+``` r
 #get order of columns 
 ordered_filtered_samples <- data.frame(allsamples=sorted.sample.wReps.bycelltype) %>%
   filter(allsamples %in% colnames(count_vsd))
@@ -440,14 +433,9 @@ colAnn <- HeatmapAnnotation(
     annotation_height = unit(1, 'cm'),
     annotation_width = unit(1, 'cm'),
     gap = unit(1, 'mm'))
-
-
-
 ```
 
-
-```{r fig.height=4, fig.width=6}
-
+``` r
 hmap_elem_sig_corr0_clustered <- Heatmap(data,
 
     # split the genes / rows according to the PAM clusters
@@ -494,10 +482,15 @@ hmap_elem_sig_corr0_clustered <- Heatmap(data,
 
     # specify top and bottom annotations
       top_annotation = colAnn)
+```
 
+    ## `use_raster` is automatically set to TRUE for a matrix with more than
+    ## 2000 rows. You can control `use_raster` argument by explicitly setting
+    ## TRUE/FALSE to it.
+    ## 
+    ## Set `ht_opt$message = FALSE` to turn off this message.
 
-
-
+``` r
 # hmap_elem_sig_corr06 <- Heatmap(data, 
 #         cluster_columns = FALSE, 
 #         cluster_rows = FALSE,
@@ -514,15 +507,16 @@ hmap_elem_sig_corr0_clustered <- Heatmap(data,
 #         cluster_row_slices = FALSE)
 ```
 
-
-```{r fig.height=4, fig.width=4.5}
-
+``` r
 hmap_elem_sig_corr0_clustered <- draw(hmap_elem_sig_corr0_clustered,
     heatmap_legend_side = 'left',
     annotation_legend_side = 'left',
     row_sub_title_side = 'right')
+```
 
+![](temporal_multi_2_time_and_space_genes_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
 
+``` r
 # print heatmap
 pdf(paste0(workingdir,outdir,"Heatmap_atac_t_and_s_Clustered.pdf"), width = 4.5, height = 4)
 
@@ -532,13 +526,57 @@ draw(hmap_elem_sig_corr0_clustered,
     row_sub_title_side = 'right')
 
 dev.off()
-
-
-
 ```
 
+    ## quartz_off_screen 
+    ##                 2
 
-
-```{r session-info}
+``` r
 sessionInfo()
 ```
+
+    ## R version 4.4.0 (2024-04-24)
+    ## Platform: aarch64-apple-darwin20
+    ## Running under: macOS Sonoma 14.4.1
+    ## 
+    ## Matrix products: default
+    ## BLAS:   /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRblas.0.dylib 
+    ## LAPACK: /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.12.0
+    ## 
+    ## locale:
+    ## [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+    ## 
+    ## time zone: Europe/London
+    ## tzcode source: internal
+    ## 
+    ## attached base packages:
+    ## [1] grid      stats     graphics  grDevices utils     datasets  methods  
+    ## [8] base     
+    ## 
+    ## other attached packages:
+    ##  [1] ComplexHeatmap_2.19.0 readxl_1.4.3          lubridate_1.9.3      
+    ##  [4] forcats_1.0.0         stringr_1.5.1         dplyr_1.1.4          
+    ##  [7] purrr_1.0.2           readr_2.1.5           tidyr_1.3.1          
+    ## [10] tibble_3.2.1          ggplot2_3.5.1         tidyverse_2.0.0      
+    ## [13] RColorBrewer_1.1-3   
+    ## 
+    ## loaded via a namespace (and not attached):
+    ##  [1] utf8_1.2.4          generics_0.1.3      shape_1.4.6.1      
+    ##  [4] stringi_1.8.3       hms_1.1.3           digest_0.6.35      
+    ##  [7] magrittr_2.0.3      evaluate_0.23       timechange_0.3.0   
+    ## [10] iterators_1.0.14    circlize_0.4.16     fastmap_1.1.1      
+    ## [13] cellranger_1.1.0    foreach_1.5.2       doParallel_1.0.17  
+    ## [16] GlobalOptions_0.1.2 fansi_1.0.6         scales_1.3.0       
+    ## [19] codetools_0.2-20    cli_3.6.2           crayon_1.5.2       
+    ## [22] rlang_1.1.3         munsell_0.5.1       withr_3.0.0        
+    ## [25] yaml_2.3.8          tools_4.4.0         parallel_4.4.0     
+    ## [28] tzdb_0.4.0          colorspace_2.1-0    BiocGenerics_0.49.1
+    ## [31] GetoptLong_1.0.5    vctrs_0.6.5         R6_2.5.1           
+    ## [34] png_0.1-8           magick_2.8.3        stats4_4.4.0       
+    ## [37] matrixStats_1.3.0   lifecycle_1.0.4     S4Vectors_0.41.7   
+    ## [40] IRanges_2.37.1      clue_0.3-65         cluster_2.1.6      
+    ## [43] pkgconfig_2.0.3     pillar_1.9.0        gtable_0.3.5       
+    ## [46] Rcpp_1.0.12         glue_1.7.0          highr_0.10         
+    ## [49] xfun_0.43           tidyselect_1.2.1    rstudioapi_0.16.0  
+    ## [52] knitr_1.46          rjson_0.2.21        htmltools_0.5.8.1  
+    ## [55] rmarkdown_2.26      Cairo_1.6-2         compiler_4.4.0
