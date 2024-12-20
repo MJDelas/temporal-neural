@@ -140,17 +140,26 @@ top_days_comparisons <- results_deseq_days %>%
 
 ## Plot number of elements changing between domains and over time
 
+### Bubble Plot 
+
 ```{r plot-fig-numbers, fig.width=8.5, fig.height=3}
 
 top_combined_comparisons <- rbind(top_days_comparisons,top_domain_comparisons)
 
-#tidy
-top_combined_comparisons <- top_combined_comparisons %>%
+#tidy 1
+top_combined_comparisons$Comparison <- gsub("_D9_vs_D5","_D5_vs_D9",top_combined_comparisons$Comparison)
+top_combined_comparisons$Comparison <- gsub("_D7_vs_D5","_D5_vs_D7",top_combined_comparisons$Comparison)
+top_combined_comparisons$Comparison <- gsub("_D9_vs_D7","_D7_vs_D9",top_combined_comparisons$Comparison)
+
+
+
+#tidy 2
+top_combined_comparisons_split <- top_combined_comparisons %>%
   separate(Comparison, into = c("empty","faceting","dimension","dim1","vs","dim2"), sep = "_")  %>%
-  mutate(dim2=factor(dim2, levels=c("D11","D7","D5","p2","p1")),
+  mutate(dim2=factor(dim2, levels=c("D11","D9","D7","D5","p2","p1")),
          dim1=factor(dim1, levels=c("p2","pM","D5","D7","D9")))
 
-ggplot(top_combined_comparisons, aes(x=dim1, y=dim2)) +
+ggplot(top_combined_comparisons_split, aes(x=dim1, y=dim2)) +
   geom_count(aes(color=dimension)) +
   scale_colour_brewer(palette = "Set1") +
   scale_size(range = c(1,9), breaks = seq(0,10000, by=1000)) + 
@@ -158,6 +167,46 @@ ggplot(top_combined_comparisons, aes(x=dim1, y=dim2)) +
   theme_bw()
 
 ```
+
+### Heatmap Plot 
+
+```{r plot-heatmap-numbers, fig.width=8.5, fig.height=3}
+
+
+ggplot(top_combined_comparisons_split, aes(x=dim1, y=dim2)) +
+  geom_count(aes(color=dimension)) +
+  scale_colour_brewer(palette = "Set1") +
+  scale_size(range = c(1,9), breaks = seq(0,10000, by=1000)) + 
+  facet_grid(dimension ~ faceting, scales = "free") +
+  theme_bw()
+
+
+top_combined_comparisons_summary <- top_combined_comparisons %>%
+  group_by(Comparison) %>%
+  summarise(n_comparison = n()) %>%
+  separate(Comparison, into = c("empty","faceting","dimension","dim1","vs","dim2"), sep = "_", remove = FALSE)  %>%
+  mutate(dim2=factor(dim2, levels=c("D11","D9","D7","D5","p2","p1")),
+         dim1=factor(dim1, levels=c("p2","pM","D5","D7","D9")))
+
+ggplot(top_combined_comparisons_summary, aes(x=dim1, y=dim2, fill=n_comparison)) +
+  geom_tile(color = "white",
+            lwd = 1.5,
+            linetype = 1) +
+  scale_fill_gradientn(colors = hcl.colors(20, "RdYlGn")) +
+  facet_grid(dimension ~ faceting, scales = "free") +
+  theme_bw()
+
+# ggplot(top_combined_comparisons_summary, aes(x=dim1, y=dim2, fill=n_comparison)) +
+#   geom_tile(color = "white",
+#             lwd = 1.5,
+#             linetype = 1) +
+#   coord_fixed() +
+#   scale_fill_gradientn(colors = hcl.colors(20, "RdYlGn")) +
+#   facet_grid(dimension ~ faceting) +
+#   theme_bw()
+
+```
+
 
 
 ## Temporal elements and clustering

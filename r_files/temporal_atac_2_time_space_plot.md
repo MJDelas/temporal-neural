@@ -112,16 +112,25 @@ top_days_comparisons <- results_deseq_days %>%
 
 ## Plot number of elements changing between domains and over time
 
+### Bubble Plot
+
 ``` r
 top_combined_comparisons <- rbind(top_days_comparisons,top_domain_comparisons)
 
-#tidy
-top_combined_comparisons <- top_combined_comparisons %>%
+#tidy 1
+top_combined_comparisons$Comparison <- gsub("_D9_vs_D5","_D5_vs_D9",top_combined_comparisons$Comparison)
+top_combined_comparisons$Comparison <- gsub("_D7_vs_D5","_D5_vs_D7",top_combined_comparisons$Comparison)
+top_combined_comparisons$Comparison <- gsub("_D9_vs_D7","_D7_vs_D9",top_combined_comparisons$Comparison)
+
+
+
+#tidy 2
+top_combined_comparisons_split <- top_combined_comparisons %>%
   separate(Comparison, into = c("empty","faceting","dimension","dim1","vs","dim2"), sep = "_")  %>%
-  mutate(dim2=factor(dim2, levels=c("D11","D7","D5","p2","p1")),
+  mutate(dim2=factor(dim2, levels=c("D11","D9","D7","D5","p2","p1")),
          dim1=factor(dim1, levels=c("p2","pM","D5","D7","D9")))
 
-ggplot(top_combined_comparisons, aes(x=dim1, y=dim2)) +
+ggplot(top_combined_comparisons_split, aes(x=dim1, y=dim2)) +
   geom_count(aes(color=dimension)) +
   scale_colour_brewer(palette = "Set1") +
   scale_size(range = c(1,9), breaks = seq(0,10000, by=1000)) + 
@@ -130,6 +139,49 @@ ggplot(top_combined_comparisons, aes(x=dim1, y=dim2)) +
 ```
 
 ![](temporal_atac_2_time_space_plot_files/figure-gfm/plot-fig-numbers-1.png)<!-- -->
+
+### Heatmap Plot
+
+``` r
+ggplot(top_combined_comparisons_split, aes(x=dim1, y=dim2)) +
+  geom_count(aes(color=dimension)) +
+  scale_colour_brewer(palette = "Set1") +
+  scale_size(range = c(1,9), breaks = seq(0,10000, by=1000)) + 
+  facet_grid(dimension ~ faceting, scales = "free") +
+  theme_bw()
+```
+
+![](temporal_atac_2_time_space_plot_files/figure-gfm/plot-heatmap-numbers-1.png)<!-- -->
+
+``` r
+top_combined_comparisons_summary <- top_combined_comparisons %>%
+  group_by(Comparison) %>%
+  summarise(n_comparison = n()) %>%
+  separate(Comparison, into = c("empty","faceting","dimension","dim1","vs","dim2"), sep = "_", remove = FALSE)  %>%
+  mutate(dim2=factor(dim2, levels=c("D11","D9","D7","D5","p2","p1")),
+         dim1=factor(dim1, levels=c("p2","pM","D5","D7","D9")))
+
+ggplot(top_combined_comparisons_summary, aes(x=dim1, y=dim2, fill=n_comparison)) +
+  geom_tile(color = "white",
+            lwd = 1.5,
+            linetype = 1) +
+  scale_fill_gradientn(colors = hcl.colors(20, "RdYlGn")) +
+  facet_grid(dimension ~ faceting, scales = "free") +
+  theme_bw()
+```
+
+![](temporal_atac_2_time_space_plot_files/figure-gfm/plot-heatmap-numbers-2.png)<!-- -->
+
+``` r
+# ggplot(top_combined_comparisons_summary, aes(x=dim1, y=dim2, fill=n_comparison)) +
+#   geom_tile(color = "white",
+#             lwd = 1.5,
+#             linetype = 1) +
+#   coord_fixed() +
+#   scale_fill_gradientn(colors = hcl.colors(20, "RdYlGn")) +
+#   facet_grid(dimension ~ faceting) +
+#   theme_bw()
+```
 
 ## Temporal elements and clustering
 
@@ -286,10 +338,6 @@ hmap <- Heatmap(vsd_hm_z,
     ## `use_raster` is automatically set to TRUE for a matrix with more than
     ## 2000 rows. You can control `use_raster` argument by explicitly setting
     ## TRUE/FALSE to it.
-    ## 
-    ## Set `ht_opt$message = FALSE` to turn off this message.
-
-    ## 'magick' package is suggested to install to give better rasterization.
     ## 
     ## Set `ht_opt$message = FALSE` to turn off this message.
 
@@ -567,10 +615,6 @@ hmap <- Heatmap(vsd_hm_z,
     ## 
     ## Set `ht_opt$message = FALSE` to turn off this message.
 
-    ## 'magick' package is suggested to install to give better rasterization.
-    ## 
-    ## Set `ht_opt$message = FALSE` to turn off this message.
-
 ``` r
 draw(hmap,
     heatmap_legend_side = 'left',
@@ -664,7 +708,7 @@ sessionInfo()
 
     ## R version 4.4.0 (2024-04-24)
     ## Platform: aarch64-apple-darwin20
-    ## Running under: macOS Sonoma 14.4.1
+    ## Running under: macOS 15.2
     ## 
     ## Matrix products: default
     ## BLAS:   /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRblas.0.dylib 
@@ -682,29 +726,29 @@ sessionInfo()
     ## 
     ## other attached packages:
     ##  [1] UpSetR_1.4.0          ggrepel_0.9.5         factoextra_1.0.7     
-    ##  [4] ComplexHeatmap_2.19.0 lubridate_1.9.3       forcats_1.0.0        
+    ##  [4] ComplexHeatmap_2.20.0 lubridate_1.9.3       forcats_1.0.0        
     ##  [7] stringr_1.5.1         dplyr_1.1.4           purrr_1.0.2          
     ## [10] readr_2.1.5           tidyr_1.3.1           tibble_3.2.1         
     ## [13] ggplot2_3.5.1         tidyverse_2.0.0       RColorBrewer_1.1-3   
     ## 
     ## loaded via a namespace (and not attached):
     ##  [1] gtable_0.3.5        circlize_0.4.16     shape_1.4.6.1      
-    ##  [4] rjson_0.2.21        xfun_0.43           GlobalOptions_0.1.2
-    ##  [7] tzdb_0.4.0          vctrs_0.6.5         tools_4.4.0        
-    ## [10] generics_0.1.3      stats4_4.4.0        parallel_4.4.0     
-    ## [13] fansi_1.0.6         highr_0.10          cluster_2.1.6      
-    ## [16] pkgconfig_2.0.3     S4Vectors_0.41.7    lifecycle_1.0.4    
-    ## [19] compiler_4.4.0      farver_2.1.1        munsell_0.5.1      
-    ## [22] codetools_0.2-20    clue_0.3-65         htmltools_0.5.8.1  
-    ## [25] yaml_2.3.8          pillar_1.9.0        crayon_1.5.2       
-    ## [28] iterators_1.0.14    foreach_1.5.2       tidyselect_1.2.1   
-    ## [31] digest_0.6.35       stringi_1.8.3       labeling_0.4.3     
-    ## [34] fastmap_1.1.1       colorspace_2.1-0    cli_3.6.2          
-    ## [37] magrittr_2.0.3      utf8_1.2.4          withr_3.0.0        
-    ## [40] scales_1.3.0        timechange_0.3.0    rmarkdown_2.26     
-    ## [43] matrixStats_1.3.0   gridExtra_2.3       png_0.1-8          
-    ## [46] GetoptLong_1.0.5    hms_1.1.3           evaluate_0.23      
-    ## [49] knitr_1.46          IRanges_2.37.1      doParallel_1.0.17  
-    ## [52] rlang_1.1.3         Rcpp_1.0.12         glue_1.7.0         
-    ## [55] BiocGenerics_0.49.1 rstudioapi_0.16.0   R6_2.5.1           
-    ## [58] plyr_1.8.9
+    ##  [4] rjson_0.2.21        xfun_0.44           GlobalOptions_0.1.2
+    ##  [7] tzdb_0.4.0          Cairo_1.6-2         vctrs_0.6.5        
+    ## [10] tools_4.4.0         generics_0.1.3      stats4_4.4.0       
+    ## [13] parallel_4.4.0      fansi_1.0.6         highr_0.11         
+    ## [16] cluster_2.1.6       pkgconfig_2.0.3     S4Vectors_0.42.0   
+    ## [19] lifecycle_1.0.4     compiler_4.4.0      farver_2.1.2       
+    ## [22] munsell_0.5.1       codetools_0.2-20    clue_0.3-65        
+    ## [25] htmltools_0.5.8.1   yaml_2.3.8          pillar_1.9.0       
+    ## [28] crayon_1.5.2        magick_2.8.3        iterators_1.0.14   
+    ## [31] foreach_1.5.2       tidyselect_1.2.1    digest_0.6.35      
+    ## [34] stringi_1.8.4       labeling_0.4.3      fastmap_1.2.0      
+    ## [37] colorspace_2.1-0    cli_3.6.2           magrittr_2.0.3     
+    ## [40] utf8_1.2.4          withr_3.0.0         scales_1.3.0       
+    ## [43] timechange_0.3.0    rmarkdown_2.27      matrixStats_1.3.0  
+    ## [46] gridExtra_2.3       png_0.1-8           GetoptLong_1.0.5   
+    ## [49] hms_1.1.3           evaluate_0.23       knitr_1.47         
+    ## [52] IRanges_2.38.0      doParallel_1.0.17   rlang_1.1.4        
+    ## [55] Rcpp_1.0.12         glue_1.7.0          BiocGenerics_0.50.0
+    ## [58] rstudioapi_0.16.0   R6_2.5.1            plyr_1.8.9
