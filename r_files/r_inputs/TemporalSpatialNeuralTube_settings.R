@@ -25,6 +25,9 @@ sorted_WTDayGate <- paste("WT",sorted_DayGate, sep="_")
 
 gates <- c("p1","p2","pM")
 
+nfiaStatus_order <- c("NFIAn_WT","NFIAp_WT","NFIAn_MUT")
+
+
 colorIZ <- c("#abdff4","#f1df9a","#f19aac",
              "#55bee8","#e6c444","#e64466",
              "#1a91c1","#c19e1a","#c11a3d",
