@@ -64,7 +64,9 @@ nextflow run luslab/briscoe-nf-tobias \
     - Calculate RNA diff expression for all pairwise comparisons
 - [RNA 2b](r_files/temporal_rna_2_time_space_import_plot.md)
     - Fig S1 RNAseq GO enrichment
-    - Tables Supp, temporal genes for all domains, temporally dynamic and cell type specific genes.
+    - Tables Supp, temporal genes for all domains, temporally dynamic and cell type specific genes
+- [RNA 3](r_files/temporal_rna_3_plotgenes_import.md)
+    - Gene expression plot for various figures
 - [Footprinting 1](r_files/temporal_footprint_1_WT.md)
     - Fig 2 and Fig S1 temporal footprints and correlated TFs
 - [Screen](r_files/temporal_screen_1_hitselection.md)
