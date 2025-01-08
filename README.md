@@ -60,9 +60,9 @@ nextflow run luslab/briscoe-nf-tobias \
 
 - [RNA 1](r_files/temporal_rna_1_export_tables.md)
     - Export normalized tables for plotting heatmaps and genes
-- [RNA 2](r_files/temporal_rna_2_time_space.md)
+- [RNA 2a](r_files/temporal_rna_2_time_space.md)
     - Calculate RNA diff expression for all pairwise comparisons
-- [RNA 3](r_files/temporal_rna_2_time_space_import_plot.md)
+- [RNA 2b](r_files/temporal_rna_2_time_space_import_plot.md)
     - Fig S1 RNAseq GO enrichment
     - Tables Supp, temporal genes for all domains, temporally dynamic and cell type specific genes.
 - [Footprinting 1](r_files/temporal_footprint_1_WT.md)
