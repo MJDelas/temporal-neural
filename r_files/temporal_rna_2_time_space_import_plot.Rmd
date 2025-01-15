@@ -22,9 +22,6 @@ library(tidyverse)
 library(ComplexHeatmap)
 library(UpSetR)
 
-library(clusterProfiler)
-organism="org.Mm.eg.db"
-library(organism, character.only = TRUE)
 
 ```
 
@@ -403,11 +400,11 @@ lapply(rcl.list, function(x) length(x))  #check/confirm size clusters
 for (i in 1:length(row_order(hmap))){
  if (i == 1) {
  clu <- t(t(row.names(vsd_hm_z[row_order(hmap)[[i]],])))
- out <- cbind(clu, paste("cluster", i, sep=""))
+ out <- cbind(clu, paste("cluster", names(rcl.list[i]), sep=""))
  colnames(out) <- c("GeneID", "Cluster")
  } else {
  clu <- t(t(row.names(vsd_hm_z[row_order(hmap)[[i]],])))
- clu <- cbind(clu, paste("cluster", i, sep=""))
+ clu <- cbind(clu, paste("cluster", names(rcl.list[i]), sep=""))
  out <- rbind(out, clu)
  }
  }
@@ -415,84 +412,6 @@ for (i in 1:length(row_order(hmap))){
 
 write.csv(out, file =paste0(workingdir,subworkinput,"TemporalALLgenes_clustered.csv"),
           quote = FALSE )
-
-```
-
-
-### GO enrichment attempts
-
-```{r message=FALSE}
-
-keytypes(org.Mm.eg.db)
-```
-
-```{r}
-
-clusterlist <- out[,2] %>% unique() %>% as.list()
-
-go_enrichment_allcluster <- lapply(clusterlist, function(x){
-  df = as.data.frame(out) %>% filter(Cluster==x)
-  
-  #get the most complete gene list without NAs
-  gene_list <- bitr(df$GeneID, fromType = "ALIAS",
-                toType = c("SYMBOL", "ENTREZID"),
-                OrgDb = org.Mm.eg.db)
-  
-  # run GO
-  ego2 <- enrichGO(gene         = gene_list$SYMBOL,
-                OrgDb         = org.Mm.eg.db,
-                keyType       = 'SYMBOL',
-                ont           = "ALL",pool=TRUE,
-                pAdjustMethod = "fdr",
-                pvalueCutoff  = 0.05, # these are the defaults
-                qvalueCutoff  = 0.2)
-  
-  #dotplot(ego2, title=x)
-  
-  go_results <- as.data.frame(ego2)
-  go_results$cluster <- df$Cluster %>% unique()
-  go_results
-})
-
-go_enrichment_df <- do.call(rbind, go_enrichment_allcluster)
-
-
-```
-
-
-plot 
-
-```{r fig.width=8, fig.height=10}
-
-#GeneRatio to actually be a ratio
-go_enrichment_df$GeneRatio <- sapply(strsplit(go_enrichment_df$GeneRatio, "/"), function(x) as.numeric(x[1])/as.numeric(x[2]))
-
-go_enrichment_plot <- go_enrichment_df %>%
-  mutate(Description = fct_reorder(Description, Count)) %>%
-  group_by(cluster,ONTOLOGY) %>%
-  slice_min(p.adjust,n=10) %>%
-  mutate(cluster=factor(cluster, level=c("cluster5","cluster6","cluster4","cluster3","cluster2","cluster1")))
-
-```
-
-
-```{r fig.width=8, fig.height=5}
-
-plot_go <- ggplot(go_enrichment_plot %>% filter(ONTOLOGY=="BP") %>% 
-                 group_by(cluster,ONTOLOGY) %>%  
-                 slice_min(p.adjust,n=2) %>% # smallest p.adj
-                 slice_min(pvalue,n=2) %>% # if same p.adj then min pval
-                 slice_max(GeneRatio,n=2) , # if both of the above the same, then max genes
-               aes(x=GeneRatio, y=Description)) +
-          geom_point(aes(color=p.adjust, size=Count))+
-          scale_color_gradientn(colours = colorspace::diverge_hcl(7, rev=TRUE)) +
-          facet_grid(cluster ~ ONTOLOGY, scales = "free_y",space = "free_y") +
-          theme_bw(base_size = 14)
-
-ggsave(paste0(workingdir,subworkinput,"BubblePlot_GOenrich.pdf"), plot=plot_go,
-             width=6, height=5, units="in", useDingbats=FALSE)
-
-plot_go
 
 ```
 
