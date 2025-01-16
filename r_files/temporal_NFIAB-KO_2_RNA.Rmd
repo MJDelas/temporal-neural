@@ -151,7 +151,7 @@ PairWiseDEseq <- lapply(c(1:length(timepoint)),function (x) {
 
 ```
 
-### RNA: How many diff acc elements between WT and KO?
+### RNA: How many diff expressed genes between WT and KO?
 
 ```{r rna-filter-KO}
 
@@ -197,13 +197,25 @@ upset(fromList(list_rna), sets=comparison_vector, order.by = "freq")
 
 ```
 
+```{r}
+
+top_KO_comparisons_rna_d11 <- top_KO_comparisons_rna[str_detect(top_KO_comparisons_rna$Comparison, "_D11__"),"Comparison"] %>% unique()
+
+list_rna_d11 <- lapply(top_KO_comparisons_rna_d11, function(x) {
+  top_KO_comparisons_rna[top_KO_comparisons_rna$Comparison==x,"Geneid"]
+})
+names(list_rna_d11) <- top_KO_comparisons_rna_d11
+
+
+```
+
 
 ### Fig: Stacked bars
 
 ```{r}
 
 
-rna_d11 <- fromList(list_rna)
+rna_d11 <- fromList(list_rna_d11)
 
 rna_d11_shaped <- rna_d11 %>%
   mutate(overlap_category=case_when( `_WT_vs_MUT_D11__p1_`=="1" & `_WT_vs_MUT_D11__p2_`=="0" & `_WT_vs_MUT_D11__pM_`=="0" ~ "p1",
