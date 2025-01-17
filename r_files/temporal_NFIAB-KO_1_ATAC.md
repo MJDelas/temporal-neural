@@ -26,12 +26,12 @@ source('./r_inputs/TemporalSpatialNeuralTube_settings.R')
 ### Set dirs
 
 ``` r
-outdir="outputs_NFIAB_ATAC"
+outdir="outputs_NFIAB_ATAC/"
 subworkinput="inputs_glialatac_1_eda_pca/"
 ifelse(!dir.exists(file.path(workingdir,outdir)), dir.create(file.path(workingdir,outdir)), "Directory exists")
 ```
 
-    ## [1] TRUE
+    ## [1] "Directory exists"
 
 ## Load data
 
@@ -365,10 +365,6 @@ hmap <- Heatmap(vsd_hm_z,
     ## 
     ## Set `ht_opt$message = FALSE` to turn off this message.
 
-    ## 'magick' package is suggested to install to give better rasterization.
-    ## 
-    ## Set `ht_opt$message = FALSE` to turn off this message.
-
 ``` r
 draw(hmap,
     heatmap_legend_side = 'left',
@@ -562,10 +558,6 @@ hmap <- Heatmap(vsd_hm_z,
     ## 
     ## Set `ht_opt$message = FALSE` to turn off this message.
 
-    ## 'magick' package is suggested to install to give better rasterization.
-    ## 
-    ## Set `ht_opt$message = FALSE` to turn off this message.
-
 ``` r
 draw(hmap,
     heatmap_legend_side = 'left',
@@ -590,13 +582,204 @@ dev.off()
     ## quartz_off_screen 
     ##                 2
 
+### Which NFIA/B-dependent genes have diff accessible elements?
+
+Different approach needed here.
+
+``` r
+# import cell type specific genes 
+NfiabKO_celltypespecific <- read.csv(paste0(workingdir,"outputs_NFIAB_RNA/","NFIAB_dependent_genes_celltypespecific.csv"), header=TRUE, stringsAsFactors = FALSE)
+
+# import figR associations 
+
+cisCorr.filt <- read.csv(paste0(workingdir,"outputs_glialmulti_time_space_genes_panels/","ALLgenes_associated_elements.csv"),
+                                        header=TRUE, stringsAsFactors = FALSE)
+
+
+## 1 Filter the gene-element table for genes in NfiabKO_celltypespecific
+## 2 Match table from (1) with diff accessible elements 
+
+# gene_element_celltypespecificgenes <- cisCorr.filt %>%
+#   filter(Gene %in% NfiabKO_celltypespecific$genenames)
+# 
+# gene_element_celltypespecificgenes$Gene %>% unique() %>% length()
+# 
+
+# joining to the clustered
+elements_ordered_manymatches <- NfiabKO_celltypespecific %>% 
+  inner_join(cisCorr.filt, by = c("genenames"="Gene"))
+
+# Best match for each gene
+elements_ordered_uniquegene <- elements_ordered_manymatches %>% 
+  group_by(genenames) %>% 
+  #filter(rObs==max(rObs)) %>% # if this is not selected then it'll be any significant peak
+  filter(rObs > 0) %>%
+  group_by(Peakid) %>% # I need each element only once for the heatmap so just in case
+  filter(rObs==max(rObs)) %>%
+  filter(pvalZ==min(pvalZ))
+
+elements_ordered_uniquegene$genenames %>% unique() %>% length()
+```
+
+    ## [1] 80
+
+``` r
+## Find best correlated / lowest pval element for each gene
+
+elements_ordered_uniquegene_uniqueelement <- elements_ordered_uniquegene %>%
+  group_by(genenames) %>%
+  filter(pvalZ==min(pvalZ))
+ 
+# OR subset only the KO-affected elements
+elements_affected <- elements_ordered_uniquegene %>%
+  inner_join(top_KO_comparisons,by = c("Peakid"="Interval"))
+
+elements_affected$genenames %>% unique() %>% length()
+```
+
+    ## [1] 38
+
+### Heatmap
+
+Best correlated element to the genes affected by NFIA/B dKO in cell type
+specific way
+
+``` r
+# filter elements
+vsd_hm <- count_vsd %>%
+  filter(X %in% elements_ordered_uniquegene_uniqueelement$Peakid) %>%
+  column_to_rownames("X")
+
+
+dim(vsd_hm)
+```
+
+    ## [1] 80 71
+
+``` r
+# z score
+vsd_hm_z <- t(scale(t(vsd_hm))) 
+
+# # order columns 
+vsd_hm_z <- vsd_hm_z[,sorted.sample.wReps.all]
+
+
+
+# metadata for the heatmap
+genecolData_first <- data.frame(Sample_ID = colnames(vsd_hm_z))
+genecolData_first <- genecolData_first %>% 
+  separate(Sample_ID,into=c("Genotype","Day","Gate","NFIAgate","Rep"), sep="_", remove=FALSE) %>%
+  mutate(Condition=paste(Genotype,Day,Gate,NFIAgate, sep="_"),
+         DayNFIA=paste(Day,NFIAgate,Genotype,sep = "_"),
+         DayGate=paste(Day,Gate,sep="_"),
+         Experiment=paste(Genotype,Rep,sep="_"),
+         NFIAstatus=paste(NFIAgate,Genotype,sep="_"))
+genecolData_first <- as.data.frame(unclass(genecolData_first))
+
+phen_data <- genecolData_first %>%
+  select(c("Sample_ID","Day","DayGate","NFIAstatus")) %>%
+  remove_rownames() %>%
+  column_to_rownames("Sample_ID")
+
+ann_color_JD <- list(
+  DayGate = c(D5_p1="#abdff4",D5_p2="#f1df9a", D5_pM="#f19aac",
+              D7_p1="#55bee8",D7_p2="#e6c444",D7_pM="#e64466",
+              D9_p1="#1a91c1",D9_p2="#c19e1a",D9_pM="#c11a3d",
+              D11_p1="#0e506b",D11_p2="#6b570e",D11_pM="#7c1127"),
+  NFIAstatus = c(NFIAn_WT="#f6f6f6",NFIAp_WT="#e8e8e8",`100`="#808080",NFIAn_MUT="#595959"),
+  Day = c(D5="#fadede",D7="#f3aaaa",D9="#e96666",D11="#cf1e1e"))
+
+
+
+# Annotated heatmap with selected colors
+hm_colors = colorRampPalette(rev(brewer.pal(n = 11, name = "RdBu")))(100)
+
+
+# Build the annotation for the complex heatmap
+colAnn <- HeatmapAnnotation(
+    df = phen_data,
+    which = 'col', # 'col' (samples) or 'row' (gene) annotation?
+    na_col = 'white', # default colour for any NA values in the annotation data-frame, 'ann'
+    col = ann_color_JD,
+    annotation_height = 0.6,
+    annotation_width = unit(1, 'cm'),
+    gap = unit(1, 'mm'))
+
+
+
+hmap <- Heatmap(vsd_hm_z,
+
+    name = 'Z-score',
+
+    col = hm_colors,
+
+    # row (gene) parameters
+      cluster_rows = TRUE,
+      show_row_dend = TRUE,
+      #row_title = 'Statistically significant genes',
+      row_title_side = 'left',
+      row_title_gp = gpar(fontsize = 12,  fontface = 'bold'),
+      row_title_rot = 90,
+      show_row_names = FALSE,
+      row_names_gp = gpar(fontsize = 10, fontface = 'bold'),
+      row_names_side = 'left',
+      row_dend_width = unit(25,'mm'),
+
+    # column (sample) parameters
+      cluster_columns = FALSE,
+      show_column_dend = TRUE,
+      column_title = '',
+      column_title_side = 'bottom',
+      column_title_gp = gpar(fontsize = 12, fontface = 'bold'),
+      column_title_rot = 0,
+      show_column_names = FALSE,
+      column_names_gp = gpar(fontsize = 8),
+      column_names_max_height = unit(10, 'cm'),
+      column_dend_height = unit(25,'mm'),
+
+    # cluster methods for rows and columns
+      clustering_distance_columns = function(x) as.dist(1 - cor(t(x))),
+      clustering_method_columns = 'ward.D2',
+      clustering_distance_rows = function(x) as.dist(1 - cor(t(x))),
+      clustering_method_rows = 'ward.D2',
+
+    # specify top and bottom annotations
+    top_annotation = colAnn)
+```
+
+``` r
+draw(hmap,
+    heatmap_legend_side = 'left',
+    annotation_legend_side = 'left',
+    row_sub_title_side = 'left')
+```
+
+![](temporal_NFIAB-KO_1_ATAC_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+
+``` r
+# print heatmap
+pdf(paste0(workingdir,outdir,"Heatmap_NFIAB_KO_ATAC_RNAcelltypespecific.pdf"), width = 6.75, height = 2) 
+
+draw(hmap,
+    heatmap_legend_side = 'left',
+    annotation_legend_side = 'left',
+    row_sub_title_side = 'left')
+
+dev.off()
+```
+
+    ## quartz_off_screen 
+    ##                 2
+
+### Motif enrichment
+
 ``` r
 sessionInfo()
 ```
 
     ## R version 4.4.0 (2024-04-24)
     ## Platform: aarch64-apple-darwin20
-    ## Running under: macOS Sonoma 14.4.1
+    ## Running under: macOS 15.2
     ## 
     ## Matrix products: default
     ## BLAS:   /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRblas.0.dylib 
@@ -613,40 +796,40 @@ sessionInfo()
     ## [8] methods   base     
     ## 
     ## other attached packages:
-    ##  [1] UpSetR_1.4.0                ComplexHeatmap_2.19.0      
+    ##  [1] UpSetR_1.4.0                ComplexHeatmap_2.20.0      
     ##  [3] lubridate_1.9.3             forcats_1.0.0              
     ##  [5] stringr_1.5.1               dplyr_1.1.4                
     ##  [7] purrr_1.0.2                 readr_2.1.5                
     ##  [9] tidyr_1.3.1                 tibble_3.2.1               
     ## [11] ggplot2_3.5.1               tidyverse_2.0.0            
-    ## [13] RColorBrewer_1.1-3          DESeq2_1.43.5              
-    ## [15] SummarizedExperiment_1.33.3 Biobase_2.63.1             
-    ## [17] MatrixGenerics_1.15.1       matrixStats_1.3.0          
-    ## [19] GenomicRanges_1.55.4        GenomeInfoDb_1.39.14       
-    ## [21] IRanges_2.37.1              S4Vectors_0.41.7           
-    ## [23] BiocGenerics_0.49.1        
+    ## [13] RColorBrewer_1.1-3          DESeq2_1.44.0              
+    ## [15] SummarizedExperiment_1.34.0 Biobase_2.64.0             
+    ## [17] MatrixGenerics_1.16.0       matrixStats_1.3.0          
+    ## [19] GenomicRanges_1.56.0        GenomeInfoDb_1.40.1        
+    ## [21] IRanges_2.38.0              S4Vectors_0.42.0           
+    ## [23] BiocGenerics_0.50.0        
     ## 
     ## loaded via a namespace (and not attached):
-    ##  [1] tidyselect_1.2.1        farver_2.1.1            fastmap_1.1.1          
+    ##  [1] tidyselect_1.2.1        farver_2.1.2            fastmap_1.2.0          
     ##  [4] digest_0.6.35           timechange_0.3.0        lifecycle_1.0.4        
     ##  [7] cluster_2.1.6           Cairo_1.6-2             magrittr_2.0.3         
-    ## [10] compiler_4.4.0          rlang_1.1.3             tools_4.4.0            
-    ## [13] utf8_1.2.4              yaml_2.3.8              knitr_1.46             
-    ## [16] labeling_0.4.3          S4Arrays_1.3.7          DelayedArray_0.29.9    
-    ## [19] plyr_1.8.9              abind_1.4-5             BiocParallel_1.37.1    
+    ## [10] compiler_4.4.0          rlang_1.1.4             tools_4.4.0            
+    ## [13] utf8_1.2.4              yaml_2.3.8              knitr_1.47             
+    ## [16] labeling_0.4.3          S4Arrays_1.4.1          DelayedArray_0.30.1    
+    ## [19] plyr_1.8.9              abind_1.4-5             BiocParallel_1.38.0    
     ## [22] withr_3.0.0             fansi_1.0.6             colorspace_2.1-0       
     ## [25] scales_1.3.0            iterators_1.0.14        cli_3.6.2              
-    ## [28] rmarkdown_2.26          crayon_1.5.2            generics_0.1.3         
+    ## [28] rmarkdown_2.27          crayon_1.5.2            generics_0.1.3         
     ## [31] rstudioapi_0.16.0       httr_1.4.7              tzdb_0.4.0             
-    ## [34] rjson_0.2.21            zlibbioc_1.49.3         parallel_4.4.0         
-    ## [37] XVector_0.43.1          vctrs_0.6.5             Matrix_1.7-0           
+    ## [34] rjson_0.2.21            zlibbioc_1.50.0         parallel_4.4.0         
+    ## [37] XVector_0.44.0          vctrs_0.6.5             Matrix_1.7-0           
     ## [40] jsonlite_1.8.8          hms_1.1.3               GetoptLong_1.0.5       
-    ## [43] clue_0.3-65             locfit_1.5-9.9          foreach_1.5.2          
-    ## [46] glue_1.7.0              codetools_0.2-20        stringi_1.8.3          
-    ## [49] gtable_0.3.5            shape_1.4.6.1           UCSC.utils_0.99.7      
-    ## [52] munsell_0.5.1           pillar_1.9.0            htmltools_0.5.8.1      
-    ## [55] GenomeInfoDbData_1.2.12 circlize_0.4.16         R6_2.5.1               
-    ## [58] doParallel_1.0.17       evaluate_0.23           lattice_0.22-6         
-    ## [61] highr_0.10              png_0.1-8               Rcpp_1.0.12            
-    ## [64] gridExtra_2.3           SparseArray_1.3.7       xfun_0.43              
-    ## [67] pkgconfig_2.0.3         GlobalOptions_0.1.2
+    ## [43] clue_0.3-65             magick_2.8.3            locfit_1.5-9.9         
+    ## [46] foreach_1.5.2           glue_1.7.0              codetools_0.2-20       
+    ## [49] stringi_1.8.4           gtable_0.3.5            shape_1.4.6.1          
+    ## [52] UCSC.utils_1.0.0        munsell_0.5.1           pillar_1.9.0           
+    ## [55] htmltools_0.5.8.1       GenomeInfoDbData_1.2.12 circlize_0.4.16        
+    ## [58] R6_2.5.1                doParallel_1.0.17       evaluate_0.23          
+    ## [61] lattice_0.22-6          highr_0.11              png_0.1-8              
+    ## [64] Rcpp_1.0.12             gridExtra_2.3           SparseArray_1.4.8      
+    ## [67] xfun_0.44               pkgconfig_2.0.3         GlobalOptions_0.1.2

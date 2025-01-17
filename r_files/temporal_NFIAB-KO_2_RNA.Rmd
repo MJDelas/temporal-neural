@@ -273,7 +273,7 @@ NfiabKO_p1_only <- data.frame(
 NfiabKO_celltypespecific <- do.call(rbind, list(NfiabKO_pMN_only,NfiabKO_p2_only,NfiabKO_p1_only))
 
 
-write.csv(NfiabKO_celltypespecific, file =paste0(workingdir,outdir,"NFIAB_dependent_genes_celltypespecific.csv"),
+write.csv(NfiabKO_celltypespecific, file =paste0(workingdir,outdir,"NFIAB_dependent_genes_celltypespecific.csv"), row.names = FALSE,
           quote = FALSE )
 
 ```

@@ -269,7 +269,7 @@ for (i in 1:length(row_order(hmap_clust))){
 
 gene_clusters <- as.data.frame(out)
 
-write.csv(gene_clusters,paste0(workingdir,outdir,"clusters_tANDs_genes.csv"),quote = FALSE)
+write.csv(gene_clusters,paste0(workingdir,outdir,"clusters_tANDs_genes.csv"),quote = FALSE, row.names = FALSE)
 
 ```
 
@@ -376,8 +376,9 @@ elements_ordered_uniquegene <- elements_ordered_manymatches %>%
   filter(pvalZ==min(pvalZ))
 
 
-write.csv(elements_ordered_uniquegene,paste0(workingdir,outdir,"tANDs_genes_associated_elements.csv"),quote = FALSE)
+write.csv(elements_ordered_uniquegene,paste0(workingdir,outdir,"tANDs_genes_associated_elements.csv"),quote = FALSE, row.names = FALSE)
 
+write.csv(cisCorr.filt, paste0(workingdir,outdir,"ALLgenes_associated_elements.csv"),quote = FALSE, row.names = FALSE)
 
 ```
 

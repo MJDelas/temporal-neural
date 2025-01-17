@@ -280,7 +280,7 @@ for (i in 1:length(row_order(hmap_clust))){
 
 gene_clusters <- as.data.frame(out)
 
-write.csv(gene_clusters,paste0(workingdir,outdir,"clusters_tANDs_genes.csv"),quote = FALSE)
+write.csv(gene_clusters,paste0(workingdir,outdir,"clusters_tANDs_genes.csv"),quote = FALSE, row.names = FALSE)
 ```
 
 ### Element heatmap for the best correlated peak in same order
@@ -371,7 +371,7 @@ elements_ordered_uniquegene <- elements_ordered_manymatches %>%
   filter(pvalZ==min(pvalZ))
 
 
-write.csv(elements_ordered_uniquegene,paste0(workingdir,outdir,"tANDs_genes_associated_elements.csv"),quote = FALSE)
+write.csv(elements_ordered_uniquegene,paste0(workingdir,outdir,"tANDs_genes_associated_elements.csv"),quote = FALSE, row.names = FALSE)
 ```
 
 Annotate the temporal elements as identified independently

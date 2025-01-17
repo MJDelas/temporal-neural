@@ -495,6 +495,191 @@ dev.off()
 ```
 
 
+### Which NFIA/B-dependent genes have diff accessible elements?
+
+Different approach needed here. 
+
+```{r}
+# import cell type specific genes 
+NfiabKO_celltypespecific <- read.csv(paste0(workingdir,"outputs_NFIAB_RNA/","NFIAB_dependent_genes_celltypespecific.csv"), header=TRUE, stringsAsFactors = FALSE)
+
+# import figR associations 
+
+cisCorr.filt <- read.csv(paste0(workingdir,"outputs_glialmulti_time_space_genes_panels/","ALLgenes_associated_elements.csv"),
+                                        header=TRUE, stringsAsFactors = FALSE)
+
+
+## 1 Filter the gene-element table for genes in NfiabKO_celltypespecific
+## 2 Match table from (1) with diff accessible elements 
+
+# gene_element_celltypespecificgenes <- cisCorr.filt %>%
+#   filter(Gene %in% NfiabKO_celltypespecific$genenames)
+# 
+# gene_element_celltypespecificgenes$Gene %>% unique() %>% length()
+# 
+
+# joining to the clustered
+elements_ordered_manymatches <- NfiabKO_celltypespecific %>% 
+  inner_join(cisCorr.filt, by = c("genenames"="Gene"))
+
+# Best match for each gene
+elements_ordered_uniquegene <- elements_ordered_manymatches %>% 
+  group_by(genenames) %>% 
+  #filter(rObs==max(rObs)) %>% # if this is not selected then it'll be any significant peak
+  filter(rObs > 0) %>%
+  group_by(Peakid) %>% # I need each element only once for the heatmap so just in case
+  filter(rObs==max(rObs)) %>%
+  filter(pvalZ==min(pvalZ))
+
+elements_ordered_uniquegene$genenames %>% unique() %>% length()
+
+## Find best correlated / lowest pval element for each gene
+
+elements_ordered_uniquegene_uniqueelement <- elements_ordered_uniquegene %>%
+  group_by(genenames) %>%
+  filter(pvalZ==min(pvalZ))
+ 
+# OR subset only the KO-affected elements
+elements_affected <- elements_ordered_uniquegene %>%
+  inner_join(top_KO_comparisons,by = c("Peakid"="Interval"))
+
+elements_affected$genenames %>% unique() %>% length()
+
+```
+
+
+### Heatmap
+Best correlated element to the genes affected by NFIA/B dKO in cell type specific way 
+
+```{r}
+# filter elements
+vsd_hm <- count_vsd %>%
+  filter(X %in% elements_ordered_uniquegene_uniqueelement$Peakid) %>%
+  column_to_rownames("X")
+
+
+dim(vsd_hm)
+
+# z score
+vsd_hm_z <- t(scale(t(vsd_hm))) 
+
+# # order columns 
+vsd_hm_z <- vsd_hm_z[,sorted.sample.wReps.all]
+
+
+
+# metadata for the heatmap
+genecolData_first <- data.frame(Sample_ID = colnames(vsd_hm_z))
+genecolData_first <- genecolData_first %>% 
+  separate(Sample_ID,into=c("Genotype","Day","Gate","NFIAgate","Rep"), sep="_", remove=FALSE) %>%
+  mutate(Condition=paste(Genotype,Day,Gate,NFIAgate, sep="_"),
+         DayNFIA=paste(Day,NFIAgate,Genotype,sep = "_"),
+         DayGate=paste(Day,Gate,sep="_"),
+         Experiment=paste(Genotype,Rep,sep="_"),
+         NFIAstatus=paste(NFIAgate,Genotype,sep="_"))
+genecolData_first <- as.data.frame(unclass(genecolData_first))
+
+phen_data <- genecolData_first %>%
+  select(c("Sample_ID","Day","DayGate","NFIAstatus")) %>%
+  remove_rownames() %>%
+  column_to_rownames("Sample_ID")
+
+ann_color_JD <- list(
+  DayGate = c(D5_p1="#abdff4",D5_p2="#f1df9a", D5_pM="#f19aac",
+              D7_p1="#55bee8",D7_p2="#e6c444",D7_pM="#e64466",
+              D9_p1="#1a91c1",D9_p2="#c19e1a",D9_pM="#c11a3d",
+              D11_p1="#0e506b",D11_p2="#6b570e",D11_pM="#7c1127"),
+  NFIAstatus = c(NFIAn_WT="#f6f6f6",NFIAp_WT="#e8e8e8",`100`="#808080",NFIAn_MUT="#595959"),
+  Day = c(D5="#fadede",D7="#f3aaaa",D9="#e96666",D11="#cf1e1e"))
+
+
+
+# Annotated heatmap with selected colors
+hm_colors = colorRampPalette(rev(brewer.pal(n = 11, name = "RdBu")))(100)
+
+
+# Build the annotation for the complex heatmap
+colAnn <- HeatmapAnnotation(
+    df = phen_data,
+    which = 'col', # 'col' (samples) or 'row' (gene) annotation?
+    na_col = 'white', # default colour for any NA values in the annotation data-frame, 'ann'
+    col = ann_color_JD,
+    annotation_height = 0.6,
+    annotation_width = unit(1, 'cm'),
+    gap = unit(1, 'mm'))
+
+
+
+hmap <- Heatmap(vsd_hm_z,
+
+    name = 'Z-score',
+
+    col = hm_colors,
+
+    # row (gene) parameters
+      cluster_rows = TRUE,
+      show_row_dend = TRUE,
+      #row_title = 'Statistically significant genes',
+      row_title_side = 'left',
+      row_title_gp = gpar(fontsize = 12,  fontface = 'bold'),
+      row_title_rot = 90,
+      show_row_names = FALSE,
+      row_names_gp = gpar(fontsize = 10, fontface = 'bold'),
+      row_names_side = 'left',
+      row_dend_width = unit(25,'mm'),
+
+    # column (sample) parameters
+      cluster_columns = FALSE,
+      show_column_dend = TRUE,
+      column_title = '',
+      column_title_side = 'bottom',
+      column_title_gp = gpar(fontsize = 12, fontface = 'bold'),
+      column_title_rot = 0,
+      show_column_names = FALSE,
+      column_names_gp = gpar(fontsize = 8),
+      column_names_max_height = unit(10, 'cm'),
+      column_dend_height = unit(25,'mm'),
+
+    # cluster methods for rows and columns
+      clustering_distance_columns = function(x) as.dist(1 - cor(t(x))),
+      clustering_method_columns = 'ward.D2',
+      clustering_distance_rows = function(x) as.dist(1 - cor(t(x))),
+      clustering_method_rows = 'ward.D2',
+
+    # specify top and bottom annotations
+    top_annotation = colAnn)
+```
+
+
+```{r fig.width=6.75, fig.height=2}
+
+draw(hmap,
+    heatmap_legend_side = 'left',
+    annotation_legend_side = 'left',
+    row_sub_title_side = 'left')
+
+# print heatmap
+pdf(paste0(workingdir,outdir,"Heatmap_NFIAB_KO_ATAC_RNAcelltypespecific.pdf"), width = 6.75, height = 2) 
+
+draw(hmap,
+    heatmap_legend_side = 'left',
+    annotation_legend_side = 'left',
+    row_sub_title_side = 'left')
+
+dev.off()
+
+
+```
+
+### Motif enrichment
+
+```{r}
+
+
+
+```
+
+
 
 ```{r}
 sessionInfo()
