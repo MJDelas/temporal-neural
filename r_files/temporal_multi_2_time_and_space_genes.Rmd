@@ -375,9 +375,13 @@ elements_ordered_uniquegene <- elements_ordered_manymatches %>%
   filter(rObs==max(rObs)) %>%
   filter(pvalZ==min(pvalZ))
 
+
+write.csv(elements_ordered_uniquegene,paste0(workingdir,outdir,"tANDs_genes_associated_elements.csv"),quote = FALSE)
+
+
 ```
 
-Annotate the temporal elements as identified independetly 
+Annotate the temporal elements as identified independently 
 
 ```{r}
 

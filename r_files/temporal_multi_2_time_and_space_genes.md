@@ -369,9 +369,12 @@ elements_ordered_uniquegene <- elements_ordered_manymatches %>%
   group_by(Peakid) %>% # I need each element only once for the heatmap so just in case
   filter(rObs==max(rObs)) %>%
   filter(pvalZ==min(pvalZ))
+
+
+write.csv(elements_ordered_uniquegene,paste0(workingdir,outdir,"tANDs_genes_associated_elements.csv"),quote = FALSE)
 ```
 
-Annotate the temporal elements as identified independetly
+Annotate the temporal elements as identified independently
 
 ``` r
 #get order of columns 
@@ -537,7 +540,7 @@ sessionInfo()
 
     ## R version 4.4.0 (2024-04-24)
     ## Platform: aarch64-apple-darwin20
-    ## Running under: macOS Sonoma 14.4.1
+    ## Running under: macOS 15.2
     ## 
     ## Matrix products: default
     ## BLAS:   /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRblas.0.dylib 
@@ -554,7 +557,7 @@ sessionInfo()
     ## [8] base     
     ## 
     ## other attached packages:
-    ##  [1] ComplexHeatmap_2.19.0 readxl_1.4.3          lubridate_1.9.3      
+    ##  [1] ComplexHeatmap_2.20.0 readxl_1.4.3          lubridate_1.9.3      
     ##  [4] forcats_1.0.0         stringr_1.5.1         dplyr_1.1.4          
     ##  [7] purrr_1.0.2           readr_2.1.5           tidyr_1.3.1          
     ## [10] tibble_3.2.1          ggplot2_3.5.1         tidyverse_2.0.0      
@@ -562,21 +565,21 @@ sessionInfo()
     ## 
     ## loaded via a namespace (and not attached):
     ##  [1] utf8_1.2.4          generics_0.1.3      shape_1.4.6.1      
-    ##  [4] stringi_1.8.3       hms_1.1.3           digest_0.6.35      
+    ##  [4] stringi_1.8.4       hms_1.1.3           digest_0.6.35      
     ##  [7] magrittr_2.0.3      evaluate_0.23       timechange_0.3.0   
-    ## [10] iterators_1.0.14    circlize_0.4.16     fastmap_1.1.1      
+    ## [10] iterators_1.0.14    circlize_0.4.16     fastmap_1.2.0      
     ## [13] cellranger_1.1.0    foreach_1.5.2       doParallel_1.0.17  
     ## [16] GlobalOptions_0.1.2 fansi_1.0.6         scales_1.3.0       
     ## [19] codetools_0.2-20    cli_3.6.2           crayon_1.5.2       
-    ## [22] rlang_1.1.3         munsell_0.5.1       withr_3.0.0        
+    ## [22] rlang_1.1.4         munsell_0.5.1       withr_3.0.0        
     ## [25] yaml_2.3.8          tools_4.4.0         parallel_4.4.0     
-    ## [28] tzdb_0.4.0          colorspace_2.1-0    BiocGenerics_0.49.1
+    ## [28] tzdb_0.4.0          colorspace_2.1-0    BiocGenerics_0.50.0
     ## [31] GetoptLong_1.0.5    vctrs_0.6.5         R6_2.5.1           
     ## [34] png_0.1-8           magick_2.8.3        stats4_4.4.0       
-    ## [37] matrixStats_1.3.0   lifecycle_1.0.4     S4Vectors_0.41.7   
-    ## [40] IRanges_2.37.1      clue_0.3-65         cluster_2.1.6      
+    ## [37] matrixStats_1.3.0   lifecycle_1.0.4     S4Vectors_0.42.0   
+    ## [40] IRanges_2.38.0      clue_0.3-65         cluster_2.1.6      
     ## [43] pkgconfig_2.0.3     pillar_1.9.0        gtable_0.3.5       
-    ## [46] Rcpp_1.0.12         glue_1.7.0          highr_0.10         
-    ## [49] xfun_0.43           tidyselect_1.2.1    rstudioapi_0.16.0  
-    ## [52] knitr_1.46          rjson_0.2.21        htmltools_0.5.8.1  
-    ## [55] rmarkdown_2.26      Cairo_1.6-2         compiler_4.4.0
+    ## [46] Rcpp_1.0.12         glue_1.7.0          highr_0.11         
+    ## [49] xfun_0.44           tidyselect_1.2.1    rstudioapi_0.16.0  
+    ## [52] knitr_1.47          rjson_0.2.21        htmltools_0.5.8.1  
+    ## [55] rmarkdown_2.27      Cairo_1.6-2         compiler_4.4.0
