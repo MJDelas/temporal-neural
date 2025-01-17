@@ -228,7 +228,11 @@ list_rna_d11 <- lapply(top_KO_comparisons_rna_d11, function(x) {
   top_KO_comparisons_rna[top_KO_comparisons_rna$Comparison==x,"Geneid"]
 })
 names(list_rna_d11) <- top_KO_comparisons_rna_d11
+
+upset(fromList(list_rna_d11), sets=top_KO_comparisons_rna_d11, order.by = "freq")
 ```
+
+![](temporal_NFIAB-KO_2_RNA_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
 ### Fig: Stacked bars
 
@@ -264,6 +268,31 @@ bar_KO_atac_RNA
 ```
 
 ![](temporal_NFIAB-KO_2_RNA_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+
+### Print gene lists
+
+Nfia/b dependent (d11), and cell type specific
+
+``` r
+NfiabKO_pMN_only <- data.frame(
+  celltype = "pMN_specific",
+  genenames = setdiff(list_rna_d11$`_WT_vs_MUT_D11__pM_`,union(list_rna_d11$`_WT_vs_MUT_D11__p2_`, list_rna_d11$`_WT_vs_MUT_D11__p1_`)))
+
+
+NfiabKO_p2_only <- data.frame(
+  celltype = "p2_specific",
+  genenames = setdiff(list_rna_d11$`_WT_vs_MUT_D11__p2_`,union(list_rna_d11$`_WT_vs_MUT_D11__pM_`, list_rna_d11$`_WT_vs_MUT_D11__p1_`)))
+
+NfiabKO_p1_only <- data.frame(
+  celltype = "p1_specific",
+  genenames = setdiff( list_rna_d11$`_WT_vs_MUT_D11__p1_`,union(list_rna_d11$`_WT_vs_MUT_D11__pM_`, list_rna_d11$`_WT_vs_MUT_D11__p2_`)))
+
+NfiabKO_celltypespecific <- do.call(rbind, list(NfiabKO_pMN_only,NfiabKO_p2_only,NfiabKO_p1_only))
+
+
+write.csv(NfiabKO_celltypespecific, file =paste0(workingdir,outdir,"NFIAB_dependent_genes_celltypespecific.csv"),
+          quote = FALSE )
+```
 
 ``` r
 sessionInfo()
