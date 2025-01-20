@@ -1,0 +1,69 @@
+---
+title: "ATAC_NFIAB_KO_motifs"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+# ATAC analysis
+Differential accessibility defects in NIFA/B KO. 
+
+```{r message=FALSE}
+
+rm(list=ls())
+
+
+library(RColorBrewer)
+library(tidyverse)
+
+```
+
+### Load settings
+
+Colors, main directory 
+
+```{r}
+source('./r_inputs/TemporalSpatialNeuralTube_settings.R')
+```
+
+
+### Set dirs
+```{r}
+outdir="outputs_NFIAB_ATAC/"
+subworkinput="outputs_NFIAB_motifs/"
+ifelse(!dir.exists(file.path(workingdir,outdir)), dir.create(file.path(workingdir,outdir)), "Directory exists")
+
+
+```
+
+
+
+## Load data
+
+```{r }
+
+ame_results_arch_topmotif <- read.table(file=paste0(workingdir,subworkinput,"Motifs_top_archtype_NFIA_depen_and_independent.txt"),header=TRUE, stringsAsFactors = FALSE)
+
+
+```
+
+```{r}
+
+top_motifs <- ame_results_arch_topmotif %>% 
+  select(rank,motif_id,pvalue,adj.pvalue,cluster,Cluster_ID, Database, Name, Seed_motif, Archetype) %>% 
+  group_by(cluster) %>%
+  slice_min(order_by=adj.pvalue, n=5)
+
+top_motifs
+
+```
+
+
+
+```{r}
+sessionInfo()
+```
