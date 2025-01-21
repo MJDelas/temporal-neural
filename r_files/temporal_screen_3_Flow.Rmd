@@ -1,0 +1,170 @@
+---
+title: "Screen flow cytometry follow up"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r message=FALSE}
+
+rm(list=ls())
+
+library(tidyverse)
+library(colorspace)
+```
+
+### Load settings
+
+Colors, main directory 
+
+```{r}
+
+source('./r_inputs/TemporalSpatialNeuralTube_settings.R')
+
+```
+
+
+### Set dirs
+```{r}
+
+subworkinput="inputs_glialScreen_2/"
+
+outdir="outputs_glialScreen_2_flow/"
+ifelse(!dir.exists(file.path(workingdir,outdir)), dir.create(file.path(workingdir,outdir)), "Directory exists")
+
+
+```
+
+
+## Load data
+
+
+```{r }
+
+nfia_panel <- lapply(list.files(path=paste0(workingdir,subworkinput),
+                                      pattern="PanelNFIA*", recursive = TRUE, full.names=TRUE),function(x) {
+  data <- read.csv(x,header=T,stringsAsFactors=F)
+  data <- data[,1:6] # there is an empty column at the end
+  colnames(data) <- c("sampleid","SOX2","NFIA_prog","OLIG2_prog","Neurons","NFIA_neurons")
+  data <- data %>% filter(substr(sampleid, 1, 5) == "panel")
+  data$metadata <- gsub(paste0(workingdir,subworkinput,"/"),"", x)
+  data$metadata <- gsub(".csv","",data$metadata)
+  data
+})
+
+nfia_panel_data <- do.call(rbind,nfia_panel)
+
+```
+
+
+### tidy data
+
+```{r}
+
+nfia_panel_plot <- nfia_panel_data %>%
+  separate(metadata, into = c("panel","biorep","Day"), sep = "_") %>%
+  select(-c("panel","Day")) %>%
+  separate(sampleid, into = c("panel","plate","Day","GeneKO","Rep","well"), sep="_", remove = F) %>%
+  pivot_longer(SOX2:NFIA_neurons, names_to = "Population",values_to = "Percentage") 
+
+```
+
+
+
+#### 1 - Polycomb and Brd8
+
+```{r, fig.width=4, fig.height=2}
+
+genes2plot <- c("NT","Ezh2","Eed","Brd8")
+
+panel_plot <- nfia_panel_plot %>% 
+  filter(GeneKO %in% genes2plot & Population %in% c("NFIA_prog") & Day %in% c("D09","D11")) %>%
+  mutate(GeneKO=factor(GeneKO, levels=genes2plot))
+
+plot_PRC_Brd9_d9_prog <- ggplot(panel_plot, aes(x=GeneKO, y=Percentage, group=GeneKO)) +
+  stat_summary(aes(fill=GeneKO),fun = mean, geom="bar", alpha=0.7, width=0.7,position=position_dodge(0.7)) +
+  geom_point(aes(shape=biorep, fill=GeneKO), position = position_dodge2(width = 0.6)) +
+  scale_shape_manual(values = shapes4_fill_manual) +
+  scale_fill_manual(values = c("#a7a7a7","#F8ACAD","#D61F26","#54100F")) +
+  facet_wrap(~ Day , scales = "free") +
+  theme_bw()+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+
+ggsave(paste0(workingdir,outdir,"Barplots_PRC_Brd8_d9_prog.pdf"), plot=plot_PRC_Brd9_d9_prog,
+             width=4, height=2, units="in", useDingbats=FALSE)
+
+plot_PRC_Brd9_d9_prog
+
+```
+#### 2 - Nr6a1 and progenitors
+
+```{r, fig.width=2.3, fig.height=2}
+
+genes2plot <- c("NT","Nr6a1")
+
+panel_plot <- nfia_panel_plot %>% 
+  filter(GeneKO %in% genes2plot & Population %in% c("NFIA_prog") & Day %in% c("D09")) %>%
+  mutate(GeneKO=factor(GeneKO, levels=genes2plot))
+
+plot_Nr6a1_prog <- ggplot(panel_plot, aes(x=GeneKO, y=Percentage, group=GeneKO)) +
+  stat_summary(aes(fill=GeneKO),fun = mean, geom="bar", alpha=0.9, width=0.7,position=position_dodge(0.7)) +
+  geom_point(aes(shape=biorep, fill=GeneKO), position = position_dodge2(width = 0.6)) +
+  expand_limits(y=40) +
+  scale_shape_manual(values = shapes4_fill_manual) +
+  scale_fill_manual(values = c("#a7a7a7","#9f0000")) +
+  facet_wrap(Day ~ Population , scales = "free") +
+  theme_bw()+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+
+ggsave(paste0(workingdir,outdir,"Barplots_Nr6a1_prog.pdf"), plot=plot_Nr6a1_prog,
+             width=2.3, height=2, units="in", useDingbats=FALSE)
+
+plot_Nr6a1_prog
+
+```
+
+#### 2 - Nr6a1 and neurons
+
+```{r, fig.width=2.3, fig.height=2}
+
+panel_plot <- nfia_panel_plot %>% 
+  filter(GeneKO %in% genes2plot & Population %in% c("NFIA_neurons") & Day %in% c("D09")) %>%
+  mutate(GeneKO=factor(GeneKO, levels=genes2plot))
+
+plot_Nr6a1_neurons <- ggplot(panel_plot, aes(x=GeneKO, y=Percentage, group=GeneKO)) +
+  stat_summary(aes(fill=GeneKO),fun = mean, geom="bar", alpha=0.9, width=0.7,position=position_dodge(0.7)) +
+  geom_point(aes(shape=biorep, fill=GeneKO), position = position_dodge2(width = 0.6)) +
+  scale_shape_manual(values = shapes4_fill_manual) +
+  scale_fill_manual(values = c("#a7a7a7","#9f0000")) +
+  facet_wrap(Day ~ Population , scales = "free") +
+  theme_bw()+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+ggsave(paste0(workingdir,outdir,"Barplots_Nr6a1_neurons.pdf"), plot=plot_Nr6a1_neurons,
+             width=2.3, height=2, units="in", useDingbats=FALSE)
+
+
+plot_Nr6a1_neurons
+
+
+```
+
+Significance test for Neuron plots
+
+```{r}
+
+with(panel_plot, t.test(Percentage[GeneKO=="NT"],Percentage[GeneKO=="Nr6a1"]))
+
+```
+
+
+```{r}
+sessionInfo()
+```
+
+
