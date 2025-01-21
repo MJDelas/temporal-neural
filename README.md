@@ -71,6 +71,10 @@ nextflow run luslab/briscoe-nf-tobias \
     - Fig 2 and Fig S1 temporal footprints and correlated TFs
 - [Screen](r_files/temporal_screen_1_hitselection.md)
     - Fig 2 and S2: screen results and hit highlight
+- [Screen hits flow analysis](r_files/temporal_screen_3_Flow.md)
+    - Fig S3: proportion of NFIA progenitors after PRC or Brd8 perturbation
+    - Fig 5: proportion of NFIA progenitors after Nr6a1 perturbation
+    - Fig 6: proportion of NFIA neurons after Nr6a1 perturbation
 - [Mutant RNAseq](r_files/temporal_screen_2_hitsRNAseq.md)
     - Fig 2 and S2 Polycomb and Brd8 mutants: temporal and spatial patterning defects
     - Fig 3 and S3 Nr6a1 mutant: temporal defects
