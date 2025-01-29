@@ -86,7 +86,7 @@ nextflow run luslab/briscoe-nf-tobias \
     - Fig 5 and S5 cell type specific and temporally dynamic genes and associated elements
 - [NFIA/B KO ATAC](r_files/temporal_NFIAB-KO_1_ATAC.md)
     - Fig 5 heatmap
-- [NIFA/B KO ATAC motifs](r_files/temporal_NFIAB-KO_4_plotmotifs.md)
+- [NIFA/B KO ATAC motif enrichment](r_files/temporal_NFIAB-KO_4_plotmotifs.md) and [plotting](r_files/temporal_NFIAB-KO_3_motifenrichment.md)
     - Fig 5 motif enrichment plotting 
 - [NFIA/B KO RNA](r_files/temporal_NFIAB-KO_2_RNA.md)
     - Fig 5 bar plots 
