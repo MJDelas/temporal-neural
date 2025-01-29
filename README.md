@@ -76,15 +76,17 @@ nextflow run luslab/briscoe-nf-tobias \
     - Fig 5: proportion of NFIA progenitors after Nr6a1 perturbation
     - Fig 6: proportion of NFIA neurons after Nr6a1 perturbation
 - [Mutant RNAseq](r_files/temporal_screen_2_hitsRNAseq.md)
-    - Fig 2 and S2 Polycomb and Brd8 mutants: temporal and spatial patterning defects
-    - Fig 3 and S3 Nr6a1 mutant: temporal defects
+    - Fig 3 and S3 Polycomb and Brd8 mutants: temporal and spatial patterning defects
+    - Fig 4 and S4 Nr6a1 mutant: temporal defects
 - [Nr6a1 OE ATAC 1](r_files/temporal_Nr6a1OE_2_ATAC.md)
-    - Fig 3 Accessibility changes upon Nr6a1 overexpression
+    - Fig 4 Accessibility changes upon Nr6a1 overexpression
 - [Nr6a1 OE ATAC 2](r_files/temporal_Nr6a1OE_3_ATAC.md)
-    - Fig 3 Accessibility in wild type CaTS-ATAC for elements changing in Nr6a1 overexpression
+    - Fig 4 Accessibility in wild type CaTS-ATAC for elements changing in Nr6a1 overexpression
 - [Time and space integration](r_files/temporal_multi_2_time_and_space_genes.md)
-    - Fig 4 and S4 cell type specific and temporally dynamic genes and associated elements
+    - Fig 5 and S5 cell type specific and temporally dynamic genes and associated elements
 - [NFIA/B KO ATAC](r_files/temporal_NFIAB-KO_1_ATAC.md)
-    - Fig 4 heatmap
+    - Fig 5 heatmap
+- [NIFA/B KO ATAC motifs](r_files/temporal_NFIAB-KO_4_plotmotifs.md)
+    - Fig 5 motif enrichment plotting 
 - [NFIA/B KO RNA](r_files/temporal_NFIAB-KO_2_RNA.md)
-    - Fig 4 bar plots 
+    - Fig 5 bar plots 
