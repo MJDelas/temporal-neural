@@ -618,20 +618,6 @@ ht_RNA_KOfoldchange <- lapply(c(1:length(KOvector)),function (x) {
 
     ## Warning: The input is a data frame-like object, convert it to a matrix.
 
-# CUSTOM for some genes
-
-``` r
-# dds_counts_plot <- dds_counts %>% 
-#   as.data.frame() %>%
-#   rownames_to_column("geneid") %>%
-#   gather(sampleid, counts_norm, starts_with("D"))%>% 
-#   separate(sampleid,into=c("Day","GeneKO","Rep"), sep="_", remove=FALSE) %>%
-#   left_join(metaKOs, by="GeneKO") %>%
-#   mutate(Condition=paste(GeneKO,Day, sep="_"),
-#          GeneKO=factor(GeneKO, levels=geneKO))
-#   
-```
-
 ## Fig: polycomb + Brd8
 
 - Beyond just NFIA: Polycomb + Brd8 promote temporal progression, e.g. 
@@ -773,13 +759,7 @@ hmap_catsRNA <- Heatmap(vsd_hm_z,
 
     # specify top and bottom annotations
       top_annotation = colAnn)
-```
 
-    ## 'magick' package is suggested to install to give better rasterization.
-    ## 
-    ## Set `ht_opt$message = FALSE` to turn off this message.
-
-``` r
     ## subset to make a heatmap of log2FC: there will be genes with NA throughout 
   sub_log2fc <- top_comparisons_prep_multi %>% dplyr::select(Geneid,log2FoldChange, GeneKO_day) %>%
       pivot_wider(values_from = log2FoldChange, names_from = GeneKO_day) # this table has 3 columns for the three days with NAs for those genes that are significant at a particular timepoint   
@@ -832,7 +812,7 @@ draw(hmap_catsRNA + hmap_foldchange,
     row_sub_title_side = 'left')    
 ```
 
-![](temporal_screen_2_hitsRNAseq_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
+![](temporal_screen_2_hitsRNAseq_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
 
 ``` r
 # print heatmap
@@ -882,7 +862,7 @@ ggsave(paste0(workingdir,outdir,"Heatmap_DV_markers_PRC-Brd8KO.pdf"), plot=hm_pl
 hm_plot_dvmarkers
 ```
 
-![](temporal_screen_2_hitsRNAseq_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
+![](temporal_screen_2_hitsRNAseq_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
 
 ### heatmap of the temporal progression hits
 
@@ -1044,7 +1024,7 @@ draw(hmap_catsRNA + hmap_foldchange,
     row_sub_title_side = 'left')    
 ```
 
-![](temporal_screen_2_hitsRNAseq_files/figure-gfm/unnamed-chunk-21-1.png)<!-- -->
+![](temporal_screen_2_hitsRNAseq_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
 
 ``` r
 # print heatmap
@@ -1261,7 +1241,7 @@ draw(hmap_catsRNA + hmap_foldchange,
     row_sub_title_side = 'left')    
 ```
 
-![](temporal_screen_2_hitsRNAseq_files/figure-gfm/unnamed-chunk-22-1.png)<!-- -->
+![](temporal_screen_2_hitsRNAseq_files/figure-gfm/unnamed-chunk-21-1.png)<!-- -->
 
 ``` r
 # print heatmap
@@ -1290,7 +1270,7 @@ set.seed(953)
 hmap = draw(hmap_catsRNA + hmap_foldchange)
 ```
 
-![](temporal_screen_2_hitsRNAseq_files/figure-gfm/unnamed-chunk-23-1.png)<!-- -->
+![](temporal_screen_2_hitsRNAseq_files/figure-gfm/unnamed-chunk-22-1.png)<!-- -->
 
 ``` r
 row_order(hmap)
@@ -1358,7 +1338,7 @@ ggsave(paste0(workingdir,outdir,"Heatmap_log2fc_subsub_Nr6a1KO.pdf"), plot=hm_pl
 hm_plot_nr
 ```
 
-![](temporal_screen_2_hitsRNAseq_files/figure-gfm/unnamed-chunk-26-1.png)<!-- -->
+![](temporal_screen_2_hitsRNAseq_files/figure-gfm/unnamed-chunk-25-1.png)<!-- -->
 
 Line plots instead of heatmap for CaTS-RNA
 
@@ -1383,7 +1363,7 @@ ggplot(count_cats_sub, aes(x=Day, y=norm_counts, group=CellType)) +
   theme_bw(base_size = 18)
 ```
 
-![](temporal_screen_2_hitsRNAseq_files/figure-gfm/unnamed-chunk-28-1.png)<!-- -->
+![](temporal_screen_2_hitsRNAseq_files/figure-gfm/unnamed-chunk-27-1.png)<!-- -->
 
 ``` r
 # relative to max for ploting the average:
@@ -1425,7 +1405,89 @@ ggsave(paste0(workingdir,outdir,"Lineplot_ave_relative_subsub_Nr6a1KO.pdf"), plo
 rel_ave_nr6a1sub
 ```
 
-![](temporal_screen_2_hitsRNAseq_files/figure-gfm/unnamed-chunk-31-1.png)<!-- -->
+![](temporal_screen_2_hitsRNAseq_files/figure-gfm/unnamed-chunk-30-1.png)<!-- -->
+
+## Nr6a1 known targets
+
+Plot changes (or lack thereof) in Nr6a1 mut.
+
+Import data generated in this script
+
+``` r
+timepoint=c("D07_","D09_","D11_")
+       
+dds_sub_counts_list <- lapply(c(1:length(timepoint)), function(x) {
+  norm_counts <- read.table(file = paste0(workingdir,outdir,"CountsNormalized_",timepoint[x],"GeneKO_Nr6a1_vs_NT",".txt"))
+  norm_counts
+})
+
+dds_sub_counts <- do.call(cbind, dds_sub_counts_list)
+
+dds_counts_plot <- dds_sub_counts %>% 
+  as.data.frame() %>%
+  rownames_to_column("geneid") %>%
+  gather(sampleid, counts_norm, starts_with("D"))%>% 
+  separate(sampleid,into=c("Day","GeneKO","Rep"), sep="_", remove=FALSE)
+
+colorKOs <- c("#b7b7b7","#ff2e0e")
+```
+
+Hox from et al Figure 5 Chang et al 2022
+
+``` r
+geneOI <- c("Hoxaas3","Hoxc5","Hoxc6","Hoxc8","Hoxc9","Hoxc10","Hoxa11","Hoxa11os","Hoxd12","Hoxa13","Hottip","Hoxb13","Hoxc13","Hoxd13")
+```
+
+Bar plots of the known Hox genes affected
+
+``` r
+plot_nr6a1KO_targetgenes <- ggplot(dds_counts_plot %>% filter(geneid %in% geneOI & GeneKO %in% c("NT","Nr6a1")) %>% 
+            mutate(geneid=factor(geneid, levels=geneOI)), 
+               aes(x=Day,y=counts_norm)) +
+          stat_summary(aes(fill=GeneKO),
+            fun = mean, geom="bar", alpha=0.8, width=0.6,position=position_dodge(0.6)) +
+          geom_point(aes(fill=GeneKO), alpha=0.7, position = position_jitterdodge(jitter.width = 0.2),color="black",shape=21) +
+          scale_fill_manual(values=colorKOs) +
+          scale_color_manual(values=colorKOs) +
+          scale_shape_manual(values=shapes4_fill_manual) +
+          facet_wrap(~ geneid, scales = "free_y") +
+          theme_bw()
+        
+# ggsave(paste0(workingdir,outdir,"Barplot_knowntargets_Nr6a1KO.pdf"), plot=plot_nr6a1KO_targetgenes,
+#              width=4, height=2, units="in", useDingbats=FALSE)
+
+plot_nr6a1KO_targetgenes
+```
+
+![](temporal_screen_2_hitsRNAseq_files/figure-gfm/unnamed-chunk-33-1.png)<!-- -->
+
+Fig 7 genes Chang et al 2022
+
+``` r
+geneOI <- c("Hoxc6","Hoxa7","Hoxc8","Hoxa9","Hoxc9","Hoxd9","Hoxb6","Hoxb9","Hoxb7","Hoxb8",
+            "Hoxa10","Hoxc10","Hoxd10","Hoxa11","Hoxc11","Hoxd11","Hoxa11os","Hotair","Hoxc12","Hoxd12","Hoxb13","Hoxc13","Hoxd13")
+```
+
+``` r
+plot_nr6a1KO_targetgenes <- ggplot(dds_counts_plot %>% filter(geneid %in% geneOI & GeneKO %in% c("NT","Nr6a1")) %>% 
+            mutate(geneid=factor(geneid, levels=geneOI)), 
+               aes(x=Day,y=counts_norm)) +
+          stat_summary(aes(fill=GeneKO),
+            fun = mean, geom="bar", alpha=0.8, width=0.6,position=position_dodge(0.6)) +
+          geom_point(aes(fill=GeneKO), alpha=0.7, position = position_jitterdodge(jitter.width = 0.2),color="black",shape=21) +
+          scale_fill_manual(values=colorKOs) +
+          scale_color_manual(values=colorKOs) +
+          scale_shape_manual(values=shapes4_fill_manual) +
+          facet_wrap(~ geneid, scales = "free_y") +
+          theme_bw()
+        
+ggsave(paste0(workingdir,outdir,"Barplot_knowntargets_Nr6a1KO.pdf"), plot=plot_nr6a1KO_targetgenes,
+             width=8, height=4.5, units="in", useDingbats=FALSE)
+
+plot_nr6a1KO_targetgenes
+```
+
+![](temporal_screen_2_hitsRNAseq_files/figure-gfm/unnamed-chunk-34-1.png)<!-- -->
 
 ``` r
 sessionInfo()
@@ -1433,7 +1495,7 @@ sessionInfo()
 
     ## R version 4.4.0 (2024-04-24)
     ## Platform: aarch64-apple-darwin20
-    ## Running under: macOS Sonoma 14.4.1
+    ## Running under: macOS 15.2
     ## 
     ## Matrix products: default
     ## BLAS:   /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRblas.0.dylib 
@@ -1451,41 +1513,42 @@ sessionInfo()
     ## 
     ## other attached packages:
     ##  [1] circlize_0.4.16             colorspace_2.1-0           
-    ##  [3] UpSetR_1.4.0                tximport_1.31.1            
-    ##  [5] ComplexHeatmap_2.19.0       lubridate_1.9.3            
+    ##  [3] UpSetR_1.4.0                tximport_1.32.0            
+    ##  [5] ComplexHeatmap_2.20.0       lubridate_1.9.3            
     ##  [7] forcats_1.0.0               stringr_1.5.1              
     ##  [9] dplyr_1.1.4                 purrr_1.0.2                
     ## [11] readr_2.1.5                 tidyr_1.3.1                
     ## [13] tibble_3.2.1                ggplot2_3.5.1              
     ## [15] tidyverse_2.0.0             RColorBrewer_1.1-3         
-    ## [17] DESeq2_1.43.5               SummarizedExperiment_1.33.3
-    ## [19] Biobase_2.63.1              MatrixGenerics_1.15.1      
-    ## [21] matrixStats_1.3.0           GenomicRanges_1.55.4       
-    ## [23] GenomeInfoDb_1.39.14        IRanges_2.37.1             
-    ## [25] S4Vectors_0.41.7            BiocGenerics_0.49.1        
+    ## [17] DESeq2_1.44.0               SummarizedExperiment_1.34.0
+    ## [19] Biobase_2.64.0              MatrixGenerics_1.16.0      
+    ## [21] matrixStats_1.3.0           GenomicRanges_1.56.0       
+    ## [23] GenomeInfoDb_1.40.1         IRanges_2.38.0             
+    ## [25] S4Vectors_0.42.0            BiocGenerics_0.50.0        
     ## 
     ## loaded via a namespace (and not attached):
-    ##  [1] tidyselect_1.2.1        farver_2.1.1            fastmap_1.1.1          
+    ##  [1] tidyselect_1.2.1        farver_2.1.2            fastmap_1.2.0          
     ##  [4] digest_0.6.35           timechange_0.3.0        lifecycle_1.0.4        
-    ##  [7] cluster_2.1.6           magrittr_2.0.3          compiler_4.4.0         
-    ## [10] rlang_1.1.3             tools_4.4.0             utf8_1.2.4             
-    ## [13] yaml_2.3.8              knitr_1.46              labeling_0.4.3         
-    ## [16] S4Arrays_1.3.7          bit_4.0.5               DelayedArray_0.29.9    
-    ## [19] plyr_1.8.9              abind_1.4-5             BiocParallel_1.37.1    
-    ## [22] withr_3.0.0             fansi_1.0.6             scales_1.3.0           
-    ## [25] iterators_1.0.14        cli_3.6.2               rmarkdown_2.26         
-    ## [28] crayon_1.5.2            ragg_1.3.0              generics_0.1.3         
-    ## [31] rstudioapi_0.16.0       httr_1.4.7              tzdb_0.4.0             
-    ## [34] rjson_0.2.21            zlibbioc_1.49.3         parallel_4.4.0         
-    ## [37] XVector_0.43.1          vctrs_0.6.5             Matrix_1.7-0           
-    ## [40] jsonlite_1.8.8          hms_1.1.3               GetoptLong_1.0.5       
-    ## [43] bit64_4.0.5             clue_0.3-65             systemfonts_1.0.6      
-    ## [46] locfit_1.5-9.9          foreach_1.5.2           glue_1.7.0             
-    ## [49] codetools_0.2-20        stringi_1.8.3           gtable_0.3.5           
-    ## [52] shape_1.4.6.1           UCSC.utils_0.99.7       munsell_0.5.1          
-    ## [55] pillar_1.9.0            htmltools_0.5.8.1       GenomeInfoDbData_1.2.12
-    ## [58] R6_2.5.1                textshaping_0.3.7       doParallel_1.0.17      
-    ## [61] vroom_1.6.5             evaluate_0.23           lattice_0.22-6         
-    ## [64] highr_0.10              png_0.1-8               Rcpp_1.0.12            
-    ## [67] gridExtra_2.3           SparseArray_1.3.7       xfun_0.43              
-    ## [70] pkgconfig_2.0.3         GlobalOptions_0.1.2
+    ##  [7] cluster_2.1.6           Cairo_1.6-2             magrittr_2.0.3         
+    ## [10] compiler_4.4.0          rlang_1.1.4             tools_4.4.0            
+    ## [13] utf8_1.2.4              yaml_2.3.8              knitr_1.47             
+    ## [16] labeling_0.4.3          S4Arrays_1.4.1          bit_4.0.5              
+    ## [19] DelayedArray_0.30.1     plyr_1.8.9              abind_1.4-5            
+    ## [22] BiocParallel_1.38.0     withr_3.0.0             fansi_1.0.6            
+    ## [25] scales_1.3.0            iterators_1.0.14        cli_3.6.2              
+    ## [28] rmarkdown_2.27          crayon_1.5.2            ragg_1.3.2             
+    ## [31] generics_0.1.3          rstudioapi_0.16.0       httr_1.4.7             
+    ## [34] tzdb_0.4.0              rjson_0.2.21            zlibbioc_1.50.0        
+    ## [37] parallel_4.4.0          XVector_0.44.0          vctrs_0.6.5            
+    ## [40] Matrix_1.7-0            jsonlite_1.8.8          hms_1.1.3              
+    ## [43] GetoptLong_1.0.5        bit64_4.0.5             clue_0.3-65            
+    ## [46] systemfonts_1.1.0       magick_2.8.3            locfit_1.5-9.9         
+    ## [49] foreach_1.5.2           glue_1.7.0              codetools_0.2-20       
+    ## [52] stringi_1.8.4           gtable_0.3.5            shape_1.4.6.1          
+    ## [55] UCSC.utils_1.0.0        munsell_0.5.1           pillar_1.9.0           
+    ## [58] htmltools_0.5.8.1       GenomeInfoDbData_1.2.12 R6_2.5.1               
+    ## [61] textshaping_0.4.0       doParallel_1.0.17       vroom_1.6.5            
+    ## [64] evaluate_0.23           lattice_0.22-6          highr_0.11             
+    ## [67] png_0.1-8               Rcpp_1.0.12             gridExtra_2.3          
+    ## [70] SparseArray_1.4.8       xfun_0.44               pkgconfig_2.0.3        
+    ## [73] GlobalOptions_0.1.2

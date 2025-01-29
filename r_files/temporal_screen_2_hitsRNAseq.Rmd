@@ -418,27 +418,6 @@ ht_RNA_KOfoldchange <- lapply(c(1:length(KOvector)),function (x) {
 
 
 
-
-
-# CUSTOM for some genes
-
-```{r}
-
-# dds_counts_plot <- dds_counts %>% 
-#   as.data.frame() %>%
-#   rownames_to_column("geneid") %>%
-#   gather(sampleid, counts_norm, starts_with("D"))%>% 
-#   separate(sampleid,into=c("Day","GeneKO","Rep"), sep="_", remove=FALSE) %>%
-#   left_join(metaKOs, by="GeneKO") %>%
-#   mutate(Condition=paste(GeneKO,Day, sep="_"),
-#          GeneKO=factor(GeneKO, levels=geneKO))
-#   
-
-```
-
-
-
-
 ## Fig: polycomb + Brd8
 
 - Beyond just NFIA: Polycomb + Brd8 promote temporal progression, e.g. 
@@ -1229,6 +1208,100 @@ ggsave(paste0(workingdir,outdir,"Lineplot_ave_relative_subsub_Nr6a1KO.pdf"), plo
              width=3.7, height=2, units="in", useDingbats=FALSE)
 
 rel_ave_nr6a1sub
+
+
+
+```
+
+
+## Nr6a1 known targets
+
+Plot changes (or lack thereof) in Nr6a1 mut.
+
+Import data generated in this script 
+
+```{r}
+timepoint=c("D07_","D09_","D11_")
+       
+dds_sub_counts_list <- lapply(c(1:length(timepoint)), function(x) {
+  norm_counts <- read.table(file = paste0(workingdir,outdir,"CountsNormalized_",timepoint[x],"GeneKO_Nr6a1_vs_NT",".txt"))
+  norm_counts
+})
+
+dds_sub_counts <- do.call(cbind, dds_sub_counts_list)
+
+dds_counts_plot <- dds_sub_counts %>% 
+  as.data.frame() %>%
+  rownames_to_column("geneid") %>%
+  gather(sampleid, counts_norm, starts_with("D"))%>% 
+  separate(sampleid,into=c("Day","GeneKO","Rep"), sep="_", remove=FALSE)
+
+colorKOs <- c("#b7b7b7","#ff2e0e")
+```
+
+
+Hox from et al Figure 5 Chang et al 2022
+
+```{r fig.height=4, fig.width=6}
+
+geneOI <- c("Hoxaas3","Hoxc5","Hoxc6","Hoxc8","Hoxc9","Hoxc10","Hoxa11","Hoxa11os","Hoxd12","Hoxa13","Hottip","Hoxb13","Hoxc13","Hoxd13")
+
+```
+
+Bar plots of the known Hox genes affected
+
+```{r fig.width=4.5, fig.height=2}
+
+plot_nr6a1KO_targetgenes <- ggplot(dds_counts_plot %>% filter(geneid %in% geneOI & GeneKO %in% c("NT","Nr6a1")) %>% 
+            mutate(geneid=factor(geneid, levels=geneOI)), 
+               aes(x=Day,y=counts_norm)) +
+          stat_summary(aes(fill=GeneKO),
+            fun = mean, geom="bar", alpha=0.8, width=0.6,position=position_dodge(0.6)) +
+          geom_point(aes(fill=GeneKO), alpha=0.7, position = position_jitterdodge(jitter.width = 0.2),color="black",shape=21) +
+          scale_fill_manual(values=colorKOs) +
+          scale_color_manual(values=colorKOs) +
+          scale_shape_manual(values=shapes4_fill_manual) +
+          facet_wrap(~ geneid, scales = "free_y") +
+          theme_bw()
+        
+# ggsave(paste0(workingdir,outdir,"Barplot_knowntargets_Nr6a1KO.pdf"), plot=plot_nr6a1KO_targetgenes,
+#              width=4, height=2, units="in", useDingbats=FALSE)
+
+plot_nr6a1KO_targetgenes
+
+
+
+```
+
+
+Fig 7 genes Chang et al 2022
+
+```{r f}
+
+geneOI <- c("Hoxc6","Hoxa7","Hoxc8","Hoxa9","Hoxc9","Hoxd9","Hoxb6","Hoxb9","Hoxb7","Hoxb8",
+            "Hoxa10","Hoxc10","Hoxd10","Hoxa11","Hoxc11","Hoxd11","Hoxa11os","Hotair","Hoxc12","Hoxd12","Hoxb13","Hoxc13","Hoxd13")
+
+```
+
+
+```{r fig.width=8, fig.height=4.5}
+
+plot_nr6a1KO_targetgenes <- ggplot(dds_counts_plot %>% filter(geneid %in% geneOI & GeneKO %in% c("NT","Nr6a1")) %>% 
+            mutate(geneid=factor(geneid, levels=geneOI)), 
+               aes(x=Day,y=counts_norm)) +
+          stat_summary(aes(fill=GeneKO),
+            fun = mean, geom="bar", alpha=0.8, width=0.6,position=position_dodge(0.6)) +
+          geom_point(aes(fill=GeneKO), alpha=0.7, position = position_jitterdodge(jitter.width = 0.2),color="black",shape=21) +
+          scale_fill_manual(values=colorKOs) +
+          scale_color_manual(values=colorKOs) +
+          scale_shape_manual(values=shapes4_fill_manual) +
+          facet_wrap(~ geneid, scales = "free_y") +
+          theme_bw()
+        
+ggsave(paste0(workingdir,outdir,"Barplot_knowntargets_Nr6a1KO.pdf"), plot=plot_nr6a1KO_targetgenes,
+             width=8, height=4.5, units="in", useDingbats=FALSE)
+
+plot_nr6a1KO_targetgenes
 
 
 
