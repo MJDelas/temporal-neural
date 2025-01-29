@@ -302,7 +302,7 @@ plot_ame_heatmap(top_50_cluster_1, group = cluster) +
       theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
 ```
 
-![](temporal_NFIAB-KO_motifenrichment/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+![](temporal_NFIAB-KO_3_motifenrichment/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
 NFIA independent elements
 
@@ -336,7 +336,7 @@ plot_ame_heatmap(top_50_cluster_1, group = cluster) +
       theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
 ```
 
-![](temporal_NFIAB-KO_motifenrichment/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+![](temporal_NFIAB-KO_3_motifenrichment/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
 
 ``` r
 # get_motif_enrich_clusters <- function(c){
@@ -459,7 +459,7 @@ ame_results_arch_topmotif %>%
     ## Scale for fill is already present.
     ## Adding another scale for fill, which will replace the existing scale.
 
-![](temporal_NFIAB-KO_motifenrichment/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
+![](temporal_NFIAB-KO_3_motifenrichment/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
 
 ``` r
 write.table(ame_results_arch_topmotif, file=paste0(workingdir,outdir,"Motifs_top_archtype_NFIA_depen_and_independent.txt"),
