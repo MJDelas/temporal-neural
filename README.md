@@ -48,6 +48,14 @@ nextflow run luslab/briscoe-nf-tobias \
   --bd_cpus 64 \
 ```
 
+### 4. scATAC-seq processing
+Data from : Shu et al., 2022.
+```
+module load CellRanger-ATAC/2.1.0
+cellranger-atac count \
+    --reference=/10x/10x_atac/refdata-cellranger-arc-mm10-2020-A-2.0.0
+```
+
 ## Code in this repo
 
 - [ATAC 1](r_files/temporal_atac_1_PCA.md): 
