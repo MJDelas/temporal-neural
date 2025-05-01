@@ -1,7 +1,7 @@
 Glial_CRISPR_Screen
 ================
 
-# dplyr::selecting CRISPR hits
+# Selecting CRISPR hits
 
 ``` r
 rm(list=ls())
@@ -26,7 +26,7 @@ outdir="outputs_glialscreen_1/"
 ifelse(!dir.exists(file.path(workingdir,outdir)), dir.create(file.path(workingdir,outdir)), "Directory exists")
 ```
 
-    ## [1] TRUE
+    ## [1] "Directory exists"
 
 ## Load data
 
@@ -434,6 +434,92 @@ plot_nfia_scatter_hits_relevant
     ## (`geom_point()`).
 
 ![](temporal_screen_1_hitselection_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
+Plot coloured by p value
+
+``` r
+nfia_intensities_plot2 <- nfia_intensities_summary %>% 
+  dplyr::select(-sdNFIA) %>%
+  pivot_wider(names_from = "screenrep",values_from = "averageNFIA") %>%
+  mutate(hit_highlight=case_when(is.na(annotatedTargetSymbol)~wellAnno,
+                                 FULL_SCREEN_1 > screen1_upperthresh & FULL_SCREEN_2 > screen2_upperthresh ~ "hit_neg_regulator",
+                                     FULL_SCREEN_1 < screen1_lowthresh & FULL_SCREEN_2 < screen2_lowthresh ~ "hit_pos_regulator",
+                                     TRUE ~ "not_hit")) %>%
+  pivot_longer(cols = c(FULL_SCREEN_1, FULL_SCREEN_2),names_to = "screenrep",values_to = "averageNFIA") %>%
+  mutate(hit_highlight=factor(hit_highlight,
+                              levels=c("not_hit","non-target","no transfection","nfia","hit_neg_regulator","hit_pos_regulator"))) %>%
+  arrange(hit_highlight)
+
+
+nfia_intensities_plot3 <- nfia_intensities_plot2 %>% filter(!is.na(averageNFIA))
+
+candidate_genes <- nfia_intensities_plot3 %>% filter(! gene_or_control %in% c("non-target","no transfection","nfia")) %>% 
+  ungroup() %>%
+  select(gene_or_control) %>% unique() %>% as.list()
+
+ranktest <- lapply(candidate_genes$gene_or_control, function(x){
+  results <- with(nfia_intensities_plot3, wilcox.test(averageNFIA[gene_or_control==x], averageNFIA[gene_or_control=="non-target"]))
+  results$gene <- x
+  results
+})
+
+ranktest_summary <- lapply(candidate_genes$gene_or_control, function(x){
+  results <- with(nfia_intensities_plot3, wilcox.test(averageNFIA[gene_or_control==x], averageNFIA[gene_or_control=="non-target"]))
+  results2 <- results$p.value %>% as.data.frame()
+  results2$gene <- x
+  results2
+})
+
+ranktest_summary_clean <- do.call(rbind,ranktest_summary)
+colnames(ranktest_summary_clean) <- c("pvalue","annotatedTargetSymbol")
+
+# if we want to print the hit list with pvalue
+hits_test <- hits_list_out %>% 
+  left_join(ranktest_summary_clean, by = "annotatedTargetSymbol")
+
+# to plot them 
+nfia_intensities_relevant_test <- nfia_intensities_relevant %>% 
+  left_join(ranktest_summary_clean, by = "annotatedTargetSymbol")
+
+plot_nfia_scatter_hits_pval <- ggplot(nfia_intensities_relevant_test, aes(x=FULL_SCREEN_1, y=FULL_SCREEN_2)) +
+  geom_vline(xintercept = as.numeric(nfia_intensities_controls[nfia_intensities_controls$screenrep=="FULL_SCREEN_1","averageNFIA"])) +
+  geom_hline(yintercept = as.numeric(nfia_intensities_controls[nfia_intensities_controls$screenrep=="FULL_SCREEN_2","averageNFIA"])) +
+  geom_vline(xintercept = screen1_upperthresh, color = "#808080", linetype = "dashed") +
+  geom_vline(xintercept = screen1_lowthresh, color = "#808080", linetype = "dashed") +
+  geom_hline(yintercept = screen2_upperthresh, color = "#808080", linetype = "dashed") +
+  geom_hline(yintercept = screen2_lowthresh, color = "#808080", linetype = "dashed") +
+  geom_point(aes(colour = cut(pvalue, c(-Inf, 0.05, Inf))), size = 1, alpha=0.7) +
+  scale_color_manual(name = "pval",
+                     values = c("(-Inf,0.05]" = "#8400b1",
+                                  "(0.05, Inf]" = "#FF8370"),
+                     labels = c("< 0.05", "> 0.05")) +
+  theme_minimal() + 
+  theme(aspect.ratio=1)
+
+
+ggsave(paste0(workingdir,outdir,"scatterplot_nfia_2screens_hits_pvalue.pdf"), plot=plot_nfia_scatter_hits_pval,
+             width=6, units="in", useDingbats=FALSE)
+```
+
+    ## Saving 6 x 5 in image
+
+    ## Warning: Removed 32 rows containing missing values or values outside the scale range
+    ## (`geom_point()`).
+
+``` r
+plot_nfia_scatter_hits_pval
+```
+
+    ## Warning: Removed 32 rows containing missing values or values outside the scale range
+    ## (`geom_point()`).
+
+![](temporal_screen_1_hitselection_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
+
+``` r
+rsq <- function(x, y) summary(lm(y~x))$r.squared
+rsq(nfia_intensities_relevant_test$FULL_SCREEN_1, nfia_intensities_relevant_test$FULL_SCREEN_2)
+```
+
+    ## [1] 0.5657875
 
 ``` r
 sessionInfo()
@@ -441,7 +527,7 @@ sessionInfo()
 
     ## R version 4.4.0 (2024-04-24)
     ## Platform: aarch64-apple-darwin20
-    ## Running under: macOS Sonoma 14.4.1
+    ## Running under: macOS 15.4
     ## 
     ## Matrix products: default
     ## BLAS:   /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRblas.0.dylib 
@@ -463,16 +549,16 @@ sessionInfo()
     ## 
     ## loaded via a namespace (and not attached):
     ##  [1] utf8_1.2.4        generics_0.1.3    rstatix_0.7.2     lattice_0.22-6   
-    ##  [5] stringi_1.8.3     hms_1.1.3         digest_0.6.35     magrittr_2.0.3   
-    ##  [9] evaluate_0.23     grid_4.4.0        timechange_0.3.0  fastmap_1.1.1    
-    ## [13] Matrix_1.7-0      backports_1.4.1   mgcv_1.9-1        fansi_1.0.6      
-    ## [17] scales_1.3.0      textshaping_0.3.7 abind_1.4-5       cli_3.6.2        
-    ## [21] crayon_1.5.2      rlang_1.1.3       splines_4.4.0     cowplot_1.1.3    
+    ##  [5] stringi_1.8.4     hms_1.1.3         digest_0.6.35     magrittr_2.0.3   
+    ##  [9] evaluate_0.23     grid_4.4.0        timechange_0.3.0  fastmap_1.2.0    
+    ## [13] Matrix_1.7-0      backports_1.5.0   mgcv_1.9-1        fansi_1.0.6      
+    ## [17] scales_1.3.0      textshaping_0.4.0 abind_1.4-5       cli_3.6.2        
+    ## [21] crayon_1.5.2      rlang_1.1.4       splines_4.4.0     cowplot_1.1.3    
     ## [25] munsell_0.5.1     withr_3.0.0       yaml_2.3.8        tools_4.4.0      
-    ## [29] tzdb_0.4.0        ggsignif_0.6.4    colorspace_2.1-0  broom_1.0.5      
+    ## [29] tzdb_0.4.0        ggsignif_0.6.4    colorspace_2.1-0  broom_1.0.6      
     ## [33] vctrs_0.6.5       R6_2.5.1          lifecycle_1.0.4   car_3.1-2        
-    ## [37] ragg_1.3.0        pkgconfig_2.0.3   pillar_1.9.0      gtable_0.3.5     
-    ## [41] glue_1.7.0        Rcpp_1.0.12       systemfonts_1.0.6 highr_0.10       
-    ## [45] xfun_0.43         tidyselect_1.2.1  rstudioapi_0.16.0 knitr_1.46       
-    ## [49] farver_2.1.1      nlme_3.1-164      htmltools_0.5.8.1 labeling_0.4.3   
-    ## [53] rmarkdown_2.26    carData_3.0-5     compiler_4.4.0
+    ## [37] ragg_1.3.2        pkgconfig_2.0.3   pillar_1.9.0      gtable_0.3.5     
+    ## [41] glue_1.7.0        Rcpp_1.0.12       systemfonts_1.1.0 highr_0.11       
+    ## [45] xfun_0.44         tidyselect_1.2.1  rstudioapi_0.16.0 knitr_1.47       
+    ## [49] farver_2.1.2      nlme_3.1-165      htmltools_0.5.8.1 labeling_0.4.3   
+    ## [53] rmarkdown_2.27    carData_3.0-5     compiler_4.4.0

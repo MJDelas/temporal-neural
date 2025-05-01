@@ -7,7 +7,7 @@ output: github_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# dplyr::selecting CRISPR hits
+# Selecting CRISPR hits
 
 ```{r message=FALSE}
 
@@ -425,6 +425,79 @@ ggsave(paste0(workingdir,outdir,"scatterplot_nfia_2screens_hits_relevant.pdf"), 
 
 plot_nfia_scatter_hits_relevant
 ```
+Plot coloured by p value
+
+```{r fig.width=12, fig.height=5}
+
+nfia_intensities_plot2 <- nfia_intensities_summary %>% 
+  dplyr::select(-sdNFIA) %>%
+  pivot_wider(names_from = "screenrep",values_from = "averageNFIA") %>%
+  mutate(hit_highlight=case_when(is.na(annotatedTargetSymbol)~wellAnno,
+                                 FULL_SCREEN_1 > screen1_upperthresh & FULL_SCREEN_2 > screen2_upperthresh ~ "hit_neg_regulator",
+                                     FULL_SCREEN_1 < screen1_lowthresh & FULL_SCREEN_2 < screen2_lowthresh ~ "hit_pos_regulator",
+                                     TRUE ~ "not_hit")) %>%
+  pivot_longer(cols = c(FULL_SCREEN_1, FULL_SCREEN_2),names_to = "screenrep",values_to = "averageNFIA") %>%
+  mutate(hit_highlight=factor(hit_highlight,
+                              levels=c("not_hit","non-target","no transfection","nfia","hit_neg_regulator","hit_pos_regulator"))) %>%
+  arrange(hit_highlight)
+
+
+nfia_intensities_plot3 <- nfia_intensities_plot2 %>% filter(!is.na(averageNFIA))
+
+candidate_genes <- nfia_intensities_plot3 %>% filter(! gene_or_control %in% c("non-target","no transfection","nfia")) %>% 
+  ungroup() %>%
+  select(gene_or_control) %>% unique() %>% as.list()
+
+ranktest <- lapply(candidate_genes$gene_or_control, function(x){
+  results <- with(nfia_intensities_plot3, wilcox.test(averageNFIA[gene_or_control==x], averageNFIA[gene_or_control=="non-target"]))
+  results$gene <- x
+  results
+})
+
+ranktest_summary <- lapply(candidate_genes$gene_or_control, function(x){
+  results <- with(nfia_intensities_plot3, wilcox.test(averageNFIA[gene_or_control==x], averageNFIA[gene_or_control=="non-target"]))
+  results2 <- results$p.value %>% as.data.frame()
+  results2$gene <- x
+  results2
+})
+
+ranktest_summary_clean <- do.call(rbind,ranktest_summary)
+colnames(ranktest_summary_clean) <- c("pvalue","annotatedTargetSymbol")
+
+# if we want to print the hit list with pvalue
+hits_test <- hits_list_out %>% 
+  left_join(ranktest_summary_clean, by = "annotatedTargetSymbol")
+
+# to plot them 
+nfia_intensities_relevant_test <- nfia_intensities_relevant %>% 
+  left_join(ranktest_summary_clean, by = "annotatedTargetSymbol")
+
+plot_nfia_scatter_hits_pval <- ggplot(nfia_intensities_relevant_test, aes(x=FULL_SCREEN_1, y=FULL_SCREEN_2)) +
+  geom_vline(xintercept = as.numeric(nfia_intensities_controls[nfia_intensities_controls$screenrep=="FULL_SCREEN_1","averageNFIA"])) +
+  geom_hline(yintercept = as.numeric(nfia_intensities_controls[nfia_intensities_controls$screenrep=="FULL_SCREEN_2","averageNFIA"])) +
+  geom_vline(xintercept = screen1_upperthresh, color = "#808080", linetype = "dashed") +
+  geom_vline(xintercept = screen1_lowthresh, color = "#808080", linetype = "dashed") +
+  geom_hline(yintercept = screen2_upperthresh, color = "#808080", linetype = "dashed") +
+  geom_hline(yintercept = screen2_lowthresh, color = "#808080", linetype = "dashed") +
+  geom_point(aes(colour = cut(pvalue, c(-Inf, 0.05, Inf))), size = 1, alpha=0.7) +
+  scale_color_manual(name = "pval",
+                     values = c("(-Inf,0.05]" = "#8400b1",
+                                  "(0.05, Inf]" = "#FF8370"),
+                     labels = c("< 0.05", "> 0.05")) +
+  theme_minimal() + 
+  theme(aspect.ratio=1)
+
+
+ggsave(paste0(workingdir,outdir,"scatterplot_nfia_2screens_hits_pvalue.pdf"), plot=plot_nfia_scatter_hits_pval,
+             width=6, units="in", useDingbats=FALSE)
+
+plot_nfia_scatter_hits_pval
+
+rsq <- function(x, y) summary(lm(y~x))$r.squared
+rsq(nfia_intensities_relevant_test$FULL_SCREEN_1, nfia_intensities_relevant_test$FULL_SCREEN_2)
+
+```
+
 
 ```{r}
 sessionInfo()
