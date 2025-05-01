@@ -65,6 +65,8 @@ cellranger-atac count \
 - [ATAC 3](r_files/temporal_atac_2_time_space_plot.md): 
     - Fig 1 ATAC space vs time quantifications
     - Fig 1 temporal heatmap
+- [ATAC 4](r_files/temporal_atac_3_time_comparisons.md): 
+    - Fig S2 temporal program correlations across CNS
 
 - [RNA 1](r_files/temporal_rna_1_export_tables.md)
     - Export normalized tables for plotting heatmaps and genes
