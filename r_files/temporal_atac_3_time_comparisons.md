@@ -572,6 +572,35 @@ corrplot(res2$r[1:4,], type="upper",tl.col = "black", tl.srt = 45,
 
 ![](temporal_atac_3_time_comparisons_files/figure-gfm/unnamed-chunk-28-2.png)<!-- -->
 
+### Comparison: Spinal Cord in vivo
+
+``` r
+spinalcord <- read.table(paste0(workingdir,subinputdir1,"spinalcord_temporalelements.txt"), header = TRUE)
+```
+
+``` r
+spinalcord_combined <-  vsd_hm_ave %>%
+  left_join(spinalcord %>% dplyr::select(e9_5,e10_5,e12_5,e13_5, order), by="order") %>%
+  column_to_rownames("order")
+
+res2 <- rcorr(as.matrix(spinalcord_combined), type="pearson")
+diag(res2$P) <- 0
+
+
+# Insignificant correlation are crossed
+corrplot(res2$r, type="upper", method = "color",tl.col = "black", tl.srt = 45,
+         p.mat = res2$P, sig.level = 0.01, insig = "blank", pch.cex = 0.8, addCoef.col = 'black')
+```
+
+![](temporal_atac_3_time_comparisons_files/figure-gfm/unnamed-chunk-30-1.png)<!-- -->
+
+``` r
+corrplot(res2$r[1:4,], type="upper",tl.col = "black", tl.srt = 45,
+         p.mat = res2$P[1:4,], sig.level = 0.01, insig = "label_sig", pch.cex = 1, col = rev(COL2('RdBu', 10)))
+```
+
+![](temporal_atac_3_time_comparisons_files/figure-gfm/unnamed-chunk-30-2.png)<!-- -->
+
 ``` r
 sessionInfo()
 ```
